@@ -1,0 +1,3 @@
+h1. golang futures, promise,...etc...
+
+things that help me simplify my code.
