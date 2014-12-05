@@ -119,13 +119,7 @@ func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p PromiseChan) {
 //!!! not tested
 // list comprehension
 func ListCompr(f FuncAny2, listOrMap AnyVal, predicates ...FuncBool1) (p PromiseChan) {
-	if 0>=len(predicates) {
-		return Range(func(a,b AnyVal)(ret AnyVal, skip bool){
-			ret = f(a,b)
-			return
-		}, listOrMap)
-	}
-	
+
 	p = Range(func(a, b AnyVal) (ret AnyVal, skip bool){
 		trueCnt := 0
 		for _, pred := range predicates {
