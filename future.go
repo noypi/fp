@@ -8,6 +8,10 @@ import (
 type AnyVal interface{}
 type PromiseChan chan AnyVal
 type LazyChan chan AnyVal
+type Tuple2 struct {
+	A AnyVal
+	B AnyVal
+}
 //-
 type Func0 func() (AnyVal, bool)
 type Func1 func(a AnyVal) (AnyVal, bool)
@@ -116,29 +120,87 @@ func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p PromiseChan) {
 	return
 }
 
-//!!! not tested
-// list comprehension
-func ListCompr(f FuncAny2, listOrMap AnyVal, predicates ...FuncBool1) (p PromiseChan) {
+// !!! not tested
+func Zip2(alist, blist AnyVal) (p PromiseChan) {
 
-	p = Range(func(a, b AnyVal) (ret AnyVal, skip bool){
-		trueCnt := 0
-		for _, pred := range predicates {
-			if pred(a) {
-				trueCnt++
+	p = make(PromiseChan)
+
+	av := reflect.ValueOf(alist)
+	bv := reflect.ValueOf(blist)
+	
+	go func() {
+		for i:=0; i<av.Len(); i++ {
+			if i< bv.Len(){
+				p <- &Tuple2{
+						A: av.Index(i).Interface(),
+						B: bv.Index(i).Interface(),
+					}
 			} else {
 				break
 			}
 		}
-		if len(predicates) == trueCnt {
-			ret = f(a, b)
-		} else {
-			skip = true
-		}
-		return
-	}, listOrMap)
-	
+		close(p)
+	}()
+
 	return
+}
+
+//!!! not tested
+// list comprehension
+func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p PromiseChan) {
+	p = make(PromiseChan)
+	va := reflect.ValueOf(alist)
 	
+	go func(){
+		for i:=0; i<va.Len(); i++ {
+			trueCnt := 0
+			a := va.Index(i).Interface()
+			for _, pred := range predicates {
+				if pred(a) {
+					trueCnt++
+				} else {
+					break
+				}
+			}
+			if len(predicates) == trueCnt {
+				p <- f(a)
+			} 
+		}
+		close(p)
+	}()
+
+	return
+
+}
+
+//!!! not tested
+// list comprehension, 2 lists
+func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p PromiseChan) {
+
+	p = make(PromiseChan)
+	go func() {
+		q1 := Zip2(alist, blist)
+		var tuple *Tuple2
+		
+		for data := range q1 {
+			tuple = data.(*Tuple2)
+			trueCnt := 0
+			for _, pred := range predicates {
+				if pred(tuple.A, tuple.B) {
+					trueCnt++
+				} else {
+					break
+				}
+			}
+			if len(predicates) == trueCnt {
+				p <- f(tuple.A, tuple.B)
+			}
+		}
+		close(p)
+	}()
+
+	return 
+
 }
 
 // !!! not yet tested
