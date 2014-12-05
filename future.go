@@ -52,74 +52,6 @@ func Promise(f Func0, chanlen ...int) (p PromiseChan) {
 	return p
 }
 
-func RangeList(f Func2, list AnyVal, chanlen ...int) (p PromiseChan) {
-	v, ok := list.(reflect.Value)
-	if !ok {
-		v = reflect.ValueOf(list)
-	}
-
-	n := v.Len()
-	p = makepromise(chanlen...)
-
-	wg := new(sync.WaitGroup)
-	wg.Add(n)
-	for i := 0; i < n; i++ {
-		go func(index int, ch PromiseChan) {
-			defer wg.Done()
-			if ret, skip := f(v.Index(index).Interface(), index); !skip {
-				ch <- ret
-			}
-
-		}(i, p)
-	}
-
-	go func() { wg.Wait(); close(p) }()
-
-	return p
-}
-
-// calls Func2 as func(value, key)
-func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p PromiseChan) {
-	v, ok := dict.(reflect.Value)
-	if !ok {
-		v = reflect.ValueOf(dict)
-	}
-
-	n := v.Len()
-	p = makepromise(chanlen...)
-	wg := new(sync.WaitGroup)
-	wg.Add(n)
-	for _, vk := range v.MapKeys() {
-		go func(vk reflect.Value, ch PromiseChan) {
-			defer wg.Done()
-			if ret, skip := f(v.MapIndex(vk).Interface(), vk.Interface()); !skip {
-				ch <- ret
-			}
-
-		}(vk, p)
-	}
-
-	go func() { wg.Wait(); close(p) }()
-
-	return p
-}
-
-func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p PromiseChan) {
-	typ := reflect.TypeOf(listOrMap)
-	var ranger Ranger
-	switch typ.Kind() {
-	case reflect.Slice:
-		ranger = RangeList
-	case reflect.Map:
-		ranger = RangeDict
-	default:
-		return
-	}
-
-	p = ranger(f, listOrMap, chanlen...)
-	return
-}
-
 // !!! not tested
 func Zip2(alist, blist AnyVal) (p PromiseChan) {
 
@@ -251,4 +183,72 @@ func ParallelLoop(af Func2, bf Func1, aListOrMap AnyVal, chanlen ...int) (p Prom
 
 	return
 
+}
+
+func RangeList(f Func2, list AnyVal, chanlen ...int) (p PromiseChan) {
+	v, ok := list.(reflect.Value)
+	if !ok {
+		v = reflect.ValueOf(list)
+	}
+
+	n := v.Len()
+	p = makepromise(chanlen...)
+
+	wg := new(sync.WaitGroup)
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		go func(index int, ch PromiseChan) {
+			defer wg.Done()
+			if ret, skip := f(v.Index(index).Interface(), index); !skip {
+				ch <- ret
+			}
+
+		}(i, p)
+	}
+
+	go func() { wg.Wait(); close(p) }()
+
+	return p
+}
+
+// calls Func2 as func(value, key)
+func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p PromiseChan) {
+	v, ok := dict.(reflect.Value)
+	if !ok {
+		v = reflect.ValueOf(dict)
+	}
+
+	n := v.Len()
+	p = makepromise(chanlen...)
+	wg := new(sync.WaitGroup)
+	wg.Add(n)
+	for _, vk := range v.MapKeys() {
+		go func(vk reflect.Value, ch PromiseChan) {
+			defer wg.Done()
+			if ret, skip := f(v.MapIndex(vk).Interface(), vk.Interface()); !skip {
+				ch <- ret
+			}
+
+		}(vk, p)
+	}
+
+	go func() { wg.Wait(); close(p) }()
+
+	return p
+}
+
+func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p PromiseChan) {
+	typ := reflect.TypeOf(listOrMap)
+	var ranger Ranger
+	switch typ.Kind() {
+	case reflect.Slice:
+		ranger = RangeList
+	case reflect.Map:
+		ranger = RangeDict
+	default:
+		return
+	}
+
+	p = ranger(f, listOrMap, chanlen...)
+	return
 }
