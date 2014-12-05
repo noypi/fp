@@ -8,9 +8,23 @@ import (
 type AnyVal interface{}
 type PromiseChan chan AnyVal
 type LazyChan chan AnyVal
+//-
 type Func0 func() (AnyVal, bool)
 type Func1 func(a AnyVal) (AnyVal, bool)
 type Func2 func(a, b AnyVal) (AnyVal, bool)
+//-
+type FuncVoid0 func()
+type FuncVoid1 func(a AnyVal) 
+type FuncVoid2 func(a, b AnyVal) 
+//-
+type FuncBool0 func() bool
+type FuncBool1 func(a AnyVal) bool
+type FuncBool2 func(a, b AnyVal) bool
+//-
+type FuncAny0 func() (AnyVal)
+type FuncAny1 func(a AnyVal) (AnyVal)
+type FuncAny2 func(a, b AnyVal) (AnyVal)
+//-
 type Ranger func(Func2, AnyVal, ...int) PromiseChan
 
 func makepromise(chanlen ...int) (p PromiseChan) {
@@ -98,8 +112,35 @@ func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p PromiseChan) {
 		return
 	}
 
-	p = ranger(f, typ, chanlen...)
+	p = ranger(f, listOrMap, chanlen...)
 	return
+}
+
+//!!! not tested
+// list comprehension
+func ListCompr(f FuncAny2, listOrMap AnyVal, predicates ...FuncBool1) (p PromiseChan) {
+	if 0>=len(predicates) {
+		return Range(func(a,b AnyVal)(ret AnyVal, skip bool){
+			ret = f(a,b)
+			return
+		}, listOrMap)
+	}
+	
+	p = Range(func(a, b AnyVal) (ret AnyVal, skip bool){
+		for _, pred := range predicates {
+			if pred(a) {
+				ret = f(a, b)
+			} else {
+				skip = true
+			}
+			
+			return
+		}
+		return
+	}, listOrMap)
+	
+	return
+	
 }
 
 // !!! not yet tested
