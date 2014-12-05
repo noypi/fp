@@ -127,14 +127,18 @@ func ListCompr(f FuncAny2, listOrMap AnyVal, predicates ...FuncBool1) (p Promise
 	}
 	
 	p = Range(func(a, b AnyVal) (ret AnyVal, skip bool){
+		trueCnt := 0
 		for _, pred := range predicates {
 			if pred(a) {
-				ret = f(a, b)
+				trueCnt++
 			} else {
-				skip = true
+				break
 			}
-			
-			return
+		}
+		if len(predicates) == trueCnt {
+			ret = f(a, b)
+		} else {
+			skip = true
 		}
 		return
 	}, listOrMap)
