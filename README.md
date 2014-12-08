@@ -14,3 +14,6 @@ Lazy, Minux suggested a function closure.
 
 Rethink when using channels as generators; improve this.
 
+### shoutout
+
+Thanks minux for reviewing... =)
