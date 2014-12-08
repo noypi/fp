@@ -66,6 +66,10 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 					x, ok = a.Recv()
 				}
 			}
+			
+			if !ok {
+				break
+			}
 
 			p.send(&Tuple2{
 				A: x,
