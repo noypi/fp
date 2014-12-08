@@ -11,7 +11,7 @@ func (suite *MySuite) TestFuture_x01(c *C) {
 		ret = 1
 		return
 	})
-	
+
 	a, ok := p.Recv()
 	c.Assert(a, Equals, 1)
 	c.Assert(ok, Equals, true)
@@ -19,7 +19,7 @@ func (suite *MySuite) TestFuture_x01(c *C) {
 	a, ok = p.Recv()
 	c.Assert(a, Equals, nil)
 	c.Assert(ok, Equals, false)
-	
+
 }
 
 func (suite *MySuite) TestFuture_x03(c *C) {
@@ -53,5 +53,5 @@ func (suite *MySuite) TestPromise_close(c *C) {
 	a, ok := p.Recv()
 	c.Assert(a, Equals, nil)
 	c.Assert(ok, Equals, false)
-	
+
 }

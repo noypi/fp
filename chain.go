@@ -98,7 +98,7 @@ func (this *ChainQ) send(ares, aerr, anot AnyVal) (done bool) {
 
 	}
 
-	q.Recv()
+	<-q.Q()
 
 	return
 }

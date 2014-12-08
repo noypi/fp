@@ -27,20 +27,14 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 	var wg WaitGroup
 	p = makepromise()
 	go func() {
-		for {
-			x, ok := qL.Recv()
-			if ok {
-				wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
-					var skip bool
-					if ret, skip = f(a); !skip {
-						p.send(ret)
-					}
-					return
-				}, x))
-
-			} else {
-				break
-			}
+		for x := range qL.Q() {
+			wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
+				var skip bool
+				if ret, skip = f(a); !skip {
+					p.send(ret)
+				}
+				return
+			}, x))
 		}
 		wg.Wait()
 		p.Close()
@@ -55,11 +49,7 @@ func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
 	p = makepromise()
 	go func() {
 		q := ZipGen2(qL1, qL2)
-		for {
-			a, ok := q.Recv()
-			if !ok {
-				break
-			}
+		for a := range q.Q() {
 			tuple := a.(*Tuple2)
 			if ret, skip := f(tuple.A, tuple.B); !skip {
 				p.send(ret)

@@ -65,6 +65,11 @@ func (this *Promise) Close() {
 	this.closed = true
 }
 
+func (this *Promise) Q() ChanAny{
+	return this.q
+}
+
+
 func (this *Promise) send(a AnyVal) {
 	this.q <- a
 }

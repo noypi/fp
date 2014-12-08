@@ -28,11 +28,7 @@ func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise)
 	p = makepromise()
 
 	go func() {
-		for {
-			a, ok := in.Recv()
-			if !ok {
-				break
-			}
+		for a := range in.Q() {
 			test_predicates1(f, a, p, predicates...)
 		}
 		p.Close()
@@ -89,11 +85,7 @@ func ListComprGen2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promi
 func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicates ...FuncBool2) {
 	var tuple *Tuple2
 
-	for {
-		data, ok := promTuple.Recv()
-		if !ok {
-			break
-		}
+	for data := range promTuple.Q() {
 		tuple = data.(*Tuple2)
 		trueCnt := 0
 		for _, pred := range predicates {

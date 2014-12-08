@@ -40,31 +40,28 @@ func WrapALazyFunctionSample() {
 	log.Println("+WrapAFunctionSample()")
 	defer log.Println("-WrapAFunctionSample()")
 
-	qLazy := make(LazyInChan, 1)
-	defer close(qLazy)
-
-	q1 := LazyIn1(func(x AnyVal) (ret AnyVal, skip bool) {
-		ret = fb(x.(int))
-		return
-	}, qLazy)
-
-	// inputs
 	as := []int{26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2}
-
 	// range will concurrently execute each
-	q2 := Range(func(a, i AnyVal) (ret AnyVal, skip bool) {
-		qLazy <- a
+	qLazy := Range(func(a, i AnyVal) (ret AnyVal, skip bool) {
 		ret = &Tuple2{
-			A: <-q1,
+			A: a,
 			B: i,
 		}
 		return
 	}, as)
 
+	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, skip bool) {
+		ret = fb(x.(int))
+		return
+	}, qLazy)
+
 	// print results
-	for a := range q2 {
-		tuple := a.(*Tuple2)
-		log.Printf("a=%d, i=%d\n", tuple.A.(int), tuple.B.(int))
+	for {
+		a, ok := q1.Recv()
+		if !ok {
+			break
+		}
+		log.Printf("ret=%d\n", a)
 	}
 
 }
@@ -125,7 +122,12 @@ func WrapExpensiveProcessing_WithResult() {
 		return
 	}, inputs)
 
-	for a := range q {
+	// print results
+	for {
+		a, ok := q.Recv()
+		if !ok {
+			break
+		}
 		log.Println("result a=", a)
 	}
 }
@@ -193,22 +195,38 @@ func WrapsAProgressBar() {
 	var wg WaitGroup
 
 	wg.Add(Async(func() {
-		for notify_message := range cq.Qnotify {
+		for {
+			notify_message, ok := cq.Qnotify.Recv()
+			if !ok {
+				break
+			}
 			log.Printf("%d%%...", notify_message.(int))
 		}
 
 	}), Async(func() {
-		for not1 := range cq1.Qnotify {
+		for {
+			not1, ok := cq1.Qnotify.Recv()
+			if !ok {
+				break
+			}
 			log.Printf("cq1 notify =%v\n", not1)
 		}
 
 	}), Async(func() {
-		for not1b := range cq1b.Qnotify {
+		for {
+			not1b, ok := cq1b.Qnotify.Recv()
+			if !ok {
+				break
+			}
 			log.Printf("cq1b notify =%v\n", not1b)
 		}
 
 	}), Async(func() {
-		for not2 := range cq2.Qnotify {
+		for {
+			not2, ok := cq2.Qnotify.Recv()
+			if !ok {
+				break
+			}
 			log.Printf("\t\tcq2 notify =%v\n", not2)
 		}
 
