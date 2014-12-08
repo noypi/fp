@@ -10,3 +10,7 @@ Lazy can leak a goroutine. Maybe provide an interface instead of LazyChan that i
 Lazy, Minux suggested a function closure.
 
 
+### to improve
+
+Rethink when using channels as generators; improve this.
+
