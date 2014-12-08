@@ -16,7 +16,7 @@ func (suite *MySuite) TestAsync(c *C) {
 	})
 
 	ns = append(ns, 0)
-	<-q
+	q.Recv()
 	ns = append(ns, 2)
 	c.Assert(executed, Equals, true)
 	c.Assert(len(ns), Equals, 3)

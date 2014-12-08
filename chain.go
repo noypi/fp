@@ -1,9 +1,9 @@
 package fp
 
 type ChainQ struct {
-	Qerror  PromiseChan
-	Qresult PromiseChan
-	Qnotify PromiseChan
+	Qerror  *Promise
+	Qresult *Promise
+	Qnotify *Promise
 	f       FuncQ
 	fcurry  FuncChainQ
 	nexts   []*ChainQ
@@ -11,9 +11,9 @@ type ChainQ struct {
 
 func NewChain(f FuncQ) (cq *ChainQ) {
 	cq = &ChainQ{
-		Qerror:  make(PromiseChan, 1),
-		Qresult: make(PromiseChan, 1),
-		Qnotify: make(PromiseChan, 1),
+		Qerror:  makepromise(),
+		Qresult: makepromise(),
+		Qnotify: makepromise(),
 	}
 	cq.f = f
 
@@ -67,9 +67,9 @@ func (this ChainQ) call() (done bool) {
 }
 
 func (this *ChainQ) close() {
-	close(this.Qnotify)
-	close(this.Qerror)
-	close(this.Qresult)
+	this.Qnotify.Close()
+	this.Qerror.Close()
+	this.Qresult.Close()
 
 	for _, next := range this.nexts {
 		next.close()
@@ -86,36 +86,19 @@ func (this *ChainQ) send(ares, aerr, anot AnyVal) (done bool) {
 	})
 
 	if nil != aerr {
-		this.Qerror <- aerr
+		this.Qerror.send(aerr)
 
 	} else if nil != anot {
-		this.Qnotify <- anot
+		this.Qnotify.send(anot)
 		done = false
 
 	} else {
 		// results can receive nil values
-		this.Qresult <- ares
+		this.Qresult.send(ares)
 
 	}
 
-	<-q
+	q.Recv()
 
 	return
-}
-
-// !!! not yet tested
-func Chain(ch LazyInChan, a ...FuncAny1) (p PromiseChan) {
-	if 0 >= len(a) {
-		return
-	}
-	p = make(PromiseChan, 1)
-	go func() {
-		v := a[0](<-ch)
-		for i := 1; i < len(a); i++ {
-			v = a[i](v)
-		}
-		p <- v
-		close(p)
-	}()
-	return p
 }

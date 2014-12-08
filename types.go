@@ -1,10 +1,21 @@
 package fp
 
+import (
+	"sync"
+	"reflect"
+)
+
 type AnyVal interface{}
-type PromiseChan chan AnyVal
-type LazyFn func()PromiseChan
-type LazyChan chan PromiseChan
-type LazyInChan PromiseChan
+type ChanAny chan AnyVal
+type Promise struct {
+	q ChanAny
+	m sync.Mutex
+	vq reflect.Value
+	closed bool
+}
+type LazyFn func() *Promise
+type LazyFn1 func(a AnyVal)*Promise
+
 type Tuple2 struct {
 	A AnyVal
 	B AnyVal
@@ -34,13 +45,40 @@ type FuncAny1 func(a AnyVal) AnyVal
 type FuncAny2 func(a, b AnyVal) AnyVal
 
 //-
-type Ranger func(Func2, AnyVal, ...int) PromiseChan
+type Ranger func(Func2, AnyVal, ...int) *Promise
 
-func makepromise(chanlen ...int) (p PromiseChan) {
+// if ok is false, the promise is closed without receiving any.
+func (this Promise) Recv() (a AnyVal, ok bool) {
+	av, ok := this.vq.Recv()
+	a = av.Interface()
+	return
+}
+
+func (this Promise) IsEmpty() bool {
+	return 0==len(this.q)
+}
+
+func (this *Promise) Close() {
+	this.m.Lock()
+	defer this.m.Unlock()
+	close(this.q)
+	this.closed = true
+}
+
+func (this *Promise) send(a AnyVal) {
+	this.q <- a
+}
+
+func makepromise(chanlen ...int) (p *Promise) {
+	p = new(Promise)
 	if 0 < len(chanlen) {
-		p = make(PromiseChan, chanlen[0])
+		if 0==chanlen[0] {
+			panic("does not support chanlen=0. could break promise.")
+		}
+		p.q = make(ChanAny, chanlen[0])
 	} else {
-		p = make(PromiseChan, 1)
+		p.q = make(ChanAny, 1)
 	}
+	p.vq = reflect.ValueOf(p.q)
 	return
 }

@@ -6,8 +6,8 @@ import (
 
 //!!! not tested
 // list comprehension
-func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p PromiseChan) {
-	p = make(PromiseChan, 1)
+func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+	p = makepromise()
 	va := reflect.ValueOf(alist)
 
 	go func() {
@@ -15,7 +15,7 @@ func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p PromiseChan
 			a := va.Index(i).Interface()
 			test_predicates1(f, a, p, predicates...)
 		}
-		close(p)
+		p.Close()
 	}()
 
 	return
@@ -24,21 +24,25 @@ func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p PromiseChan
 
 //!!! not tested
 // list comprehension
-func ListComprGen(f FuncAny1, in LazyInChan, predicates ...FuncBool1) (p PromiseChan) {
-	p = make(PromiseChan, 1)
+func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise) {
+	p = makepromise()
 
 	go func() {
-		for a := range in {
+		for {
+			a, ok := in.Recv()
+			if !ok {
+				break
+			}
 			test_predicates1(f, a, p, predicates...)
 		}
-		close(p)
+		p.Close()
 	}()
 
 	return
 
 }
 
-func test_predicates1(f FuncAny1, a AnyVal, outchan PromiseChan, predicates ...FuncBool1) {
+func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...FuncBool1) {
 	trueCnt := 0
 	for _, pred := range predicates {
 		if pred(a) {
@@ -48,19 +52,19 @@ func test_predicates1(f FuncAny1, a AnyVal, outchan PromiseChan, predicates ...F
 		}
 	}
 	if len(predicates) == trueCnt {
-		outchan <- f(a)
+		outchan.send(f(a))
 	}
 }
 
 //!!! not tested
 // list comprehension, 2 lists
-func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p PromiseChan) {
+func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
 
-	p = make(PromiseChan, 1)
+	p = makepromise()
 	go func() {
 		q1 := Zip2(alist, blist)
-		test_predicates2(f, LazyInChan(q1), p, predicates...)
-		close(p)
+		test_predicates2(f, q1, p, predicates...)
+		p.Close()
 	}()
 
 	return
@@ -69,22 +73,27 @@ func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p Pro
 
 //!!! not tested
 // list comprehension, 2 lists
-func ListComprGen2(f FuncAny2, a, b LazyInChan, predicates ...FuncBool2) (p PromiseChan) {
+func ListComprGen2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promise) {
 
-	p = make(PromiseChan, 1)
+	p = makepromise()
 	go func() {
 		q1 := ZipGen2(a, b)
-		test_predicates2(f, LazyInChan(q1), p, predicates...)
-		close(p)
+		test_predicates2(f, q1, p, predicates...)
+		p.Close()
 	}()
 
 	return
 
 }
 
-func test_predicates2(f FuncAny2, tupleChan LazyInChan, outchan PromiseChan, predicates ...FuncBool2) {
+func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicates ...FuncBool2) {
 	var tuple *Tuple2
-	for data := range tupleChan {
+
+	for {
+		data, ok := promTuple.Recv()
+		if !ok {
+			break
+		}
 		tuple = data.(*Tuple2)
 		trueCnt := 0
 		for _, pred := range predicates {
@@ -94,8 +103,9 @@ func test_predicates2(f FuncAny2, tupleChan LazyInChan, outchan PromiseChan, pre
 				break
 			}
 		}
+		
 		if len(predicates) == trueCnt {
-			outchan <- f(tuple.A, tuple.B)
+			outchan.send( f(tuple.A, tuple.B) )
 		}
 	}
 }

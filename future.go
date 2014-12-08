@@ -6,13 +6,13 @@ func Q(f FuncQ) (cq *ChainQ) {
 	return
 }
 
-func Promise(f Func0) (p PromiseChan) {
-	p = make(PromiseChan, 0)
+func Future(f Func0) (p *Promise) {
+	p = makepromise()
 	go func() {
 		if ret, skip := f(); !skip {
-			p <- ret
+			p.send(ret)
 		}
-		close(p)
+		p.Close()
 	}()
 	return
 }

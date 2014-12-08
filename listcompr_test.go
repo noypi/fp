@@ -13,11 +13,22 @@ func (suite *MySuite) TestListCompr(c *C) {
 	}, list, func(a AnyVal) bool {
 		return 0 == (a.(int) % 2)
 	})
-
-	c.Assert(<-q, Equals, 6)
-	c.Assert(<-q, Equals, 12)
-	c.Assert(<-q, Equals, 18)
-	c.Assert(<-q, Equals, nil)
+	
+	type _res struct {
+		v AnyVal
+		ok bool
+	}
+	res := []_res{
+		{6, true},
+		{12, true},
+		{18, true},
+		{nil, false},
+	}
+	for _, vv := range res {
+		v, ok := q.Recv()
+		c.Assert(v, Equals, vv.v)
+		c.Assert(ok, Equals, vv.ok)
+	}
 }
 
 func (suite *MySuite) TestListCompr2(c *C) {
@@ -32,8 +43,19 @@ func (suite *MySuite) TestListCompr2(c *C) {
 		return 0 == (a.(int) % 2)
 	})
 
-	c.Assert(<-q, Equals, 5)
-	c.Assert(<-q, Equals, 9)
-	c.Assert(<-q, Equals, 13)
-	c.Assert(<-q, Equals, nil)
+	type _res struct {
+		v AnyVal
+		ok bool
+	}
+	res := []_res{
+		{5, true},
+		{9, true},
+		{13, true},
+		{nil, false},
+	}
+	for _, vv := range res {
+		v, ok := q.Recv()
+		c.Assert(v, Equals, vv.v)
+		c.Assert(ok, Equals, vv.ok)
+	}
 }

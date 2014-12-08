@@ -8,18 +8,18 @@ const cDefaultCapacity = 4
 
 // a channel that can grow in size when needed
 type VectorChan struct {
-	q      PromiseChan
+	q      *Promise
 	mutex  sync.Mutex
 	closed bool
 }
 
 func NewVectorChan(capacity int) *VectorChan {
 	v := new(VectorChan)
-	v.q = make(PromiseChan, capacity)
+	v.q = makepromise(capacity)
 	return v
 }
 
-func (this *VectorChan) Add(in ...PromiseChan) {
+func (this *VectorChan) Add(in ...*Promise) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -41,7 +41,7 @@ func (this *VectorChan) Send(as ...AnyVal) {
 func (this *VectorChan) Close() {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
-	close(this.q)
+	this.q.Close()
 	this.closed = true
 }
 
@@ -51,43 +51,41 @@ func (this *VectorChan) send(x AnyVal) {
 	}
 
 	if nil == this.q {
-		this.q = make(PromiseChan, cDefaultCapacity)
+		this.q = makepromise(cDefaultCapacity)
 	}
 
-	if 0 == (cap(this.q) - len(this.q)) {
-		q1 := make(PromiseChan, cap(this.q)<<1)
-		close(this.q)
+	if 0 == (cap(this.q.q) - len(this.q.q)) {
+		q1 := makepromise(cap(this.q.q)<<1)
+		close(this.q.q)
 
-		for a := range this.q {
-			q1 <- a
+		for a := range this.q.q {
+			q1.send(a)
 		}
 
 		this.q = q1
 	}
 
-	this.q <- x
+	this.q.send(x)
 }
 
 func (this *VectorChan) Recv() (a AnyVal, ok bool) {
-	q := this.getchan()
-	ok = (0 < len(q))
-	if ok {
-		a = <-q
-	}
-	return
+	return this.getchan().Recv()
 }
 
 func (this VectorChan) Len() int {
-	return len(this.getchan())
+	return len(this.getchan().q)
 }
 
 func (this VectorChan) Cap() int {
-	return cap(this.getchan())
+	return cap(this.getchan().q)
 }
 
-func (this *VectorChan) getchan() PromiseChan {
+func (this *VectorChan) getchan() *Promise {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
+	if nil==this.q {
+		this.q = makepromise(cDefaultCapacity)
+	}
 	// can still attempt to read after close, but not send on it
 	return this.q
 	// !!! what happens if this was returned then vector grows after?

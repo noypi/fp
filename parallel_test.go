@@ -13,8 +13,13 @@ func (suite *MySuite) TestRangeList(c *C) {
 		return
 	}, list)
 
-	for i := range p {
-		c.Log(i.(int))
+	for {
+		if i, ok := p.Recv(); ok {
+			c.Log(i.(int))
+		} else {
+			break
+		}
+		
 	}
 }
 
@@ -35,9 +40,13 @@ func (suite *MySuite) TestRangeDict(c *C) {
 	}, list)
 
 	hasItem := false
-	for i := range p {
-		hasItem = true
-		c.Assert(i.(int) == 4, Equals, true)
+	for {
+		if i, ok := p.Recv(); ok {
+			hasItem = true
+			c.Assert(i.(int) == 4, Equals, true)
+		} else {
+			break
+		}
 	}
 
 	c.Assert(hasItem, Equals, true)
@@ -52,9 +61,20 @@ func (suite *MySuite) TestParallelLoop(c *C) {
 		return
 	}, []int{10, 31, 53})
 
-	c.Assert((<-q).(int), Equals, 20)
-	c.Assert((<-q).(int), Equals, 62)
-	c.Assert((<-q).(int), Equals, 106)
-	c.Assert(<-q, Equals, nil)
+	type _res struct {
+		v AnyVal
+		ok bool
+	}
+	res := []_res{
+		{20, true},
+		{62, true},
+		{106, true},
+		{nil, false},
+	}
+	for _, vv := range res {
+		v, ok := q.Recv()
+		c.Assert(v, Equals, vv.v)
+		c.Assert(ok, Equals, vv.ok)
+	}
 
 }

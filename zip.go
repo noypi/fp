@@ -5,9 +5,9 @@ import (
 )
 
 // !!! not tested
-func Zip2(alist, blist AnyVal) (p PromiseChan) {
+func Zip2(alist, blist AnyVal) (p *Promise) {
 
-	p = make(PromiseChan, 1)
+	p = makepromise()
 
 	av := reflect.ValueOf(alist)
 	bv := reflect.ValueOf(blist)
@@ -15,53 +15,65 @@ func Zip2(alist, blist AnyVal) (p PromiseChan) {
 	go func() {
 		for i := 0; i < av.Len(); i++ {
 			if i < bv.Len() {
-				p <- &Tuple2{
+				p.send(&Tuple2{
 					A: av.Index(i).Interface(),
 					B: bv.Index(i).Interface(),
-				}
+				})
 			} else {
 				break
 			}
 		}
-		close(p)
+		p.Close()
 	}()
 
 	return
 }
 
 // !!! not tested
-// this Zip does not accept nil as a value to tuples... need to improve?
-// closing a and b stops the goroutine
-func ZipGen2(a, b LazyInChan) (p PromiseChan) {
+func ZipGen2(a, b *Promise) (p *Promise) {
 
-	p = make(PromiseChan, 0)
+	p = makepromise()
 
 	go func() {
 
 		for {
 			var x, y AnyVal
-			select {
-			case x = <-a:
-				for y = range b {
-					// breaks when b is closed
-				}
-			case y = <-b:
-				for x = range a {
-					// breaks when a is closed
-				}
-			}
-
-			if nil == x || nil == y {
+			var ok bool
+			
+			chosen, xyi, ok := reflect.Select([]reflect.SelectCase{
+				reflect.SelectCase{
+					Dir: reflect.SelectRecv,
+					Chan: a.vq,
+				},
+				reflect.SelectCase{
+					Dir: reflect.SelectRecv,
+					Chan: b.vq,
+				},
+			})
+			
+			if !ok {
 				break
 			}
-
-			p <- &Tuple2{
-				A: x,
-				B: y,
+			
+			if 0==chosen {
+				x = xyi.Interface()
+				if ok {
+					y, ok = b.Recv()
+				}
+			} else {
+				y = xyi.Interface()
+				if ok {
+					x, ok = a.Recv()
+				}
 			}
 
+			p.send(&Tuple2{
+				A: x,
+				B: y,
+			})
+
 		}
-		close(p)
+		p.Close()
 	}()
 
 	return

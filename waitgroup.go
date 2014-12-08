@@ -7,11 +7,11 @@ type WaitGroup struct {
 // sets initial capacity
 func NewWaitGroup(capacity int) *WaitGroup {
 	wg := new(WaitGroup)
-	wg.v.q = make(PromiseChan, capacity)
+	wg.v.q = makepromise(capacity)
 	return wg
 }
 
-func (this *WaitGroup) Add(qs ...PromiseChan) {
+func (this *WaitGroup) Add(qs ...*Promise) {
 	for _, a := range qs {
 		this.v.Add(a)
 	}
@@ -31,23 +31,24 @@ func (this WaitGroup) WaitN(n int) {
 }
 
 func (this WaitGroup) Wait() {
-	if 0 == this.v.Len() {
-		return
-	}
 	for {
+		if 0==this.v.Len() {
+			break
+		}
 		if x, ok := this.v.Recv(); ok {
 			flushchan(x)
-		} else {
-			break
 		}
 	}
 
 }
 
 func flushchan(a AnyVal) {
-	if c, b := a.(PromiseChan); b {
-		for _ = range c {
-			// close c to break
+	if c, b := a.(*Promise); b {
+		var ok bool
+		for {
+			if _, ok = c.Recv(); !ok {
+				break
+			}
 		}
 	}
 }

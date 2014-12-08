@@ -6,10 +6,26 @@ import (
 	"time"
 )
 
-func (suite *MySuite) TestPromise(c *C) {
+func (suite *MySuite) TestFuture_x01(c *C) {
+	p := Future(func() (ret AnyVal, skip bool) {
+		ret = 1
+		return
+	})
+	
+	a, ok := p.Recv()
+	c.Assert(a, Equals, 1)
+	c.Assert(ok, Equals, true)
+
+	a, ok = p.Recv()
+	c.Assert(a, Equals, nil)
+	c.Assert(ok, Equals, false)
+	
+}
+
+func (suite *MySuite) TestFuture_x03(c *C) {
 
 	didCall := false
-	p := Promise(func() (ret AnyVal, skip bool) {
+	p := Future(func() (ret AnyVal, skip bool) {
 		fmt.Print("adrian guwapo")
 		didCall = true
 		return
@@ -27,5 +43,15 @@ func (suite *MySuite) TestPromise(c *C) {
 	}
 	c.Assert(wasTested, Equals, true)
 	c.Log("adrian guwapo 2")
-	<-p
+	p.Recv()
+}
+
+func (suite *MySuite) TestPromise_close(c *C) {
+	p := makepromise()
+	p.Close()
+
+	a, ok := p.Recv()
+	c.Assert(a, Equals, nil)
+	c.Assert(ok, Equals, false)
+	
 }

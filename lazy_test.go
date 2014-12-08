@@ -36,82 +36,29 @@ func (suite *MySuite) TestLazy(c *C) {
 	*/
 }
 
-func (suite *MySuite) TestLazyIn(c *C) {
-	qLazy := make(LazyInChan, 1)
-
-	q1 := LazyIn1(func(x AnyVal) (ret AnyVal, skip bool) {
-		ret = x.(int) * 2
-		return
-	}, qLazy)
-
-	var wg WaitGroup
-	wg.Add(Async(func() {
-		// sends input
-		qLazy <- 10
-		qLazy <- 31
-		qLazy <- 53
-		close(qLazy)
-	}))
-
-	c.Assert((<-q1).(int), Equals, 20)
-	c.Assert((<-q1).(int), Equals, 62)
-	c.Assert((<-q1).(int), Equals, 106)
-	c.Assert(<-q1, Equals, nil)
-
-	wg.Wait()
-}
-
-func (suite *MySuite) TestLazyIn_x02(c *C) {
-	qLazy := make(LazyInChan, 1)
-
-	q1 := LazyIn1(func(x AnyVal) (ret AnyVal, skip bool) {
-		ret = x.(int) * 2
-		return
-	}, qLazy)
-
-	var wg WaitGroup
-	wg.Add(Async(func() {
-		// sends input
-		qLazy <- 10
-		qLazy <- 31
-		qLazy <- 53
-		close(qLazy)
-	}))
-
-	as := []int{}
-	for a := range q1 {
-		as = append(as, a.(int))
-	}
-
-	c.Assert(len(as), Equals, 3)
-	c.Assert(as[0], Equals, 20)
-	c.Assert(as[1], Equals, 62)
-	c.Assert(as[2], Equals, 106)
-
-	wg.Wait()
-
-}
-
 func (suite *MySuite) TestLazyInAsync1(c *C) {
-	qLazy := make(LazyInChan, 1)
+	q := makepromise()
 
 	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, skip bool) {
 		ret = x.(int) * 2
 		return
-	}, qLazy)
+	}, q)
 
 	var wg WaitGroup
 	wg.Add(Async(func() {
-		// sends input
-		qLazy <- 10
-		qLazy <- 31
-		qLazy <- 53
-		close(qLazy)
+		q.send(10)
+		q.send(31)
+		q.send(53)
+		q.Close()
 	}))
 
 	as := []int{}
-	for a := range q1 {
-		as = append(as, a.(int))
+	for {
+		if a, ok := q1.Recv(); ok {
+			as = append(as, a.(int))
+		} else {
+			break
+		}
 	}
 
 	c.Assert(len(as), Equals, 3)

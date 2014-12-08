@@ -1,69 +1,71 @@
 package fp
 
-// !!! needs to be tested, Lazies should return closures,...
-// use double arrows, example, <-<-l
+// !!! not yet tested
 func Lazy(f FuncAny0) LazyFn {
-	return func() (PromiseChan) {
-		return Promise(func()(ret AnyVal, skip bool) {
+	return func() (*Promise) {
+		return Future(func()(ret AnyVal, skip bool) {
 			ret = f()
 			return
 		})
-	}	
+	}
+}
+
+// !!! not yet tested
+func Lazy1(f FuncAny1) (LazyFn1) {
+	return func(a AnyVal) (*Promise) {
+		return Future(func()(ret AnyVal, skip bool) {
+			ret = f(a)
+			return
+		})
+	}
 }
 
 // !!! not yet tested
 // caller closes l to stop goroutine
-func LazyIn1(f Func1, l LazyInChan) (p PromiseChan) {
-	// was purposely set to 0, so, results are received in the expected order
-	p = make(PromiseChan, 0)
-	go func() {
-		for x := range l {
-			if ret, skip := f(x); !skip {
-				p <- ret
-			}
-		}
-		close(p)
-	}()
-
-	return
-}
-
-// !!! not yet tested
-// caller closes l to stop goroutine
-func LazyInAsync1(f Func1, qL LazyInChan, chanlen ...int) (p PromiseChan) {
+func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 
 	var wg WaitGroup
-	p = makepromise(chanlen...)
+	p = makepromise()
 	go func() {
-		for x := range qL {
-			wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
-				var skip bool
-				if ret, skip = f(a); !skip {
-					p <- ret
-				}
-				return
-			}, x))
+		for {
+			x, ok := qL.Recv()
+			if ok {
+				wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
+					var skip bool
+					if ret, skip = f(a); !skip {
+						p.send(ret)
+					}
+					return
+				}, x))
+
+			} else {
+				break
+			}
 		}
 		wg.Wait()
-		close(p)
+		p.Close()
 	}()
 
 	return
 }
 
 // !!! not yet tested
-func LazyIn2(f Func2, qL1, qL2 LazyInChan) (p PromiseChan) {
+func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
 	// was purposely set to 0, so, results are received in the expected order
-	p = make(PromiseChan, 0)
+	p = makepromise()
 	go func() {
 		q := ZipGen2(qL1, qL2)
-		for a := range q {
+		for {
+			a, ok := q.Recv()
+			if !ok {
+				break
+			}
 			tuple := a.(*Tuple2)
 			if ret, skip := f(tuple.A, tuple.B); !skip {
-				p <- ret
+				p.send(ret)
 			}
 		}
-		close(p)
+		p.Close()
 	}()
 
 	return
