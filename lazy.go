@@ -1,17 +1,14 @@
 package fp
 
+// !!! needs to be tested, Lazies should return closures,...
 // use double arrows, example, <-<-l
-func Lazy(f FuncAny0) (l LazyChan) {
-	l = make(LazyChan, 0)
-	go func() {
-		p := make(PromiseChan, 1)
-		l <- p
-		p <- f()
-		close(l)
-		close(p)
-	}()
-
-	return l
+func Lazy(f FuncAny0) LazyFn {
+	return func() (PromiseChan) {
+		return Promise(func()(ret AnyVal, skip bool) {
+			ret = f()
+			return
+		})
+	}	
 }
 
 // !!! not yet tested

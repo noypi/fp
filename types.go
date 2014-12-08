@@ -2,6 +2,7 @@ package fp
 
 type AnyVal interface{}
 type PromiseChan chan AnyVal
+type LazyFn func()PromiseChan
 type LazyChan chan PromiseChan
 type LazyInChan PromiseChan
 type Tuple2 struct {
