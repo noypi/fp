@@ -2,7 +2,7 @@
 
 things that help me simplify my code.
 
-, note: list comprehension's are evaluated asynchronously.
+, note: ListCompr are evaluated asynchronously.
 
 #### Examples
 
