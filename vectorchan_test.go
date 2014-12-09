@@ -28,7 +28,7 @@ func (suite *MySuite) TestVectorChan(c *C) {
 	c.Assert(v.Cap(), Equals, 16)
 
 	ch1, _ := v.Recv()
-	
+
 	a, _ := ch1.(*Promise).Recv()
 	c.Assert(a, Equals, 12)
 	a, _ = ch1.(*Promise).Recv()

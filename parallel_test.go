@@ -19,7 +19,7 @@ func (suite *MySuite) TestRangeList(c *C) {
 		} else {
 			break
 		}
-		
+
 	}
 }
 
@@ -62,7 +62,7 @@ func (suite *MySuite) TestParallelLoop(c *C) {
 	}, []int{10, 31, 53})
 
 	type _res struct {
-		v AnyVal
+		v  AnyVal
 		ok bool
 	}
 	res := []_res{

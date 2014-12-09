@@ -6,7 +6,7 @@ import (
 )
 
 func (suite *MySuite) TestLazy(c *C) {
-/* TODO: fix this
+	/* TODO: fix this
 	seq := []string{}
 
 	qLazy := Lazy(func() AnyVal {

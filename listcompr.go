@@ -6,7 +6,7 @@ import (
 
 //!!! not tested
 // list comprehension
-func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+func listCompr(f FuncAny1, alist AnyVal, async bool, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	va := reflect.ValueOf(alist)
 
@@ -14,12 +14,15 @@ func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
 		var wg WaitGroup
 		for i := 0; i < va.Len(); i++ {
 			a := va.Index(i).Interface()
-			if p1 := test_predicates1(f, a, p, predicates...); nil != p1 {
+			p1 := test_predicates1(f, a, p, async, predicates...)
+			if async && nil != p1 {
 				wg.Add(p1)
 			}
 		}
 
-		wg.Wait()
+		if async {
+			wg.Wait()
+		}
 		p.Close()
 	}()
 
@@ -27,20 +30,31 @@ func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
 
 }
 
+func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+	return listCompr(f, alist, false, predicates...)
+}
+
+func ListComprAsync(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+	return listCompr(f, alist, true, predicates...)
+}
+
 //!!! not tested
 // list comprehension
-func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise) {
+func listComprGen(f FuncAny1, in *Promise, async bool, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 
 	go func() {
 		var wg WaitGroup
 		for a := range in.Q() {
-			if p1 := test_predicates1(f, a, p, predicates...); nil != p1 {
+			p1 := test_predicates1(f, a, p, async, predicates...)
+			if async && nil != p1 {
 				wg.Add(p1)
 			}
 		}
 
-		wg.Wait()
+		if async {
+			wg.Wait()
+		}
 		p.Close()
 	}()
 
@@ -48,7 +62,15 @@ func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise)
 
 }
 
-func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...FuncBool1) (p *Promise) {
+func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise) {
+	return listComprGen(f, in, false, predicates...)
+}
+
+func ListComprGenAsync(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise) {
+	return listComprGen(f, in, true, predicates...)
+}
+
+func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, async bool, predicates ...FuncBool1) (p *Promise) {
 	trueCnt := 0
 	for _, pred := range predicates {
 		if pred(a) {
@@ -58,9 +80,14 @@ func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...Func
 		}
 	}
 	if len(predicates) == trueCnt {
-		p = Async(func() {
+
+		if async {
+			p = Async(func() {
+				outchan.send(f(a))
+			})
+		} else {
 			outchan.send(f(a))
-		})
+		}
 	}
 
 	return
@@ -68,35 +95,49 @@ func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...Func
 
 //!!! not tested
 // list comprehension, 2 lists
-func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
+func listCompr2(f FuncAny2, alist, blist AnyVal, async bool, predicates ...FuncBool2) (p *Promise) {
 
 	p = makepromise()
 	go func() {
 		q1 := Zip2(alist, blist)
-		test_predicates2(f, q1, p, predicates...)
+		test_predicates2(f, q1, p, async, predicates...)
 		p.Close()
 	}()
 
 	return
 
+}
+
+func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
+	return listCompr2(f, alist, blist, false, predicates...)
+}
+
+func ListComprAsync2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
+	return listCompr2(f, alist, blist, true, predicates...)
 }
 
 //!!! not tested
 // list comprehension, 2 lists
-func ListComprGen2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promise) {
-
+func listComprGen2(f FuncAny2, a, b *Promise, async bool, predicates ...FuncBool2) (p *Promise) {
 	p = makepromise()
 	go func() {
 		q1 := ZipGen2(a, b)
-		test_predicates2(f, q1, p, predicates...)
+		test_predicates2(f, q1, p, async, predicates...)
 		p.Close()
 	}()
 
 	return
-
 }
 
-func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicates ...FuncBool2) {
+func ListComprGen2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promise) {
+	return listComprGen2(f, a, b, false, predicates...)
+}
+
+func ListComprGenAsync2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promise) {
+	return listComprGen2(f, a, b, true, predicates...)
+}
+
+func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, async bool, predicates ...FuncBool2) {
 	var tuple *Tuple2
 	var wg WaitGroup
 
@@ -112,12 +153,18 @@ func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicat
 		}
 
 		if len(predicates) == trueCnt {
-			wg.Add(AsyncAnyN(func(n ...AnyVal) AnyVal {
-				outchan.send(f(n[0], n[1]))
-				return true
-			}, tuple.A, tuple.B))
+			if async {
+				wg.Add(AsyncAnyN(func(n ...AnyVal) AnyVal {
+					outchan.send(f(n[0], n[1]))
+					return true
+				}, tuple.A, tuple.B))
+			} else {
+				outchan.send(f(tuple.A, tuple.B))
+			}
 		}
 	}
 
-	wg.Wait()
+	if async {
+		wg.Wait()
+	}
 }

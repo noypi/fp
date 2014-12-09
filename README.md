@@ -2,8 +2,6 @@
 
 things that help me simplify my code.
 
-, note: ListCompr are evaluated asynchronously.
-
 #### Examples
 
 ##### example of implementing a resource using LazyN
