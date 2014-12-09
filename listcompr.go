@@ -11,10 +11,15 @@ func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
 	va := reflect.ValueOf(alist)
 
 	go func() {
+		var wg WaitGroup
 		for i := 0; i < va.Len(); i++ {
 			a := va.Index(i).Interface()
-			test_predicates1(f, a, p, predicates...)
+			if p1 := test_predicates1(f, a, p, predicates...); nil != p1 {
+				wg.Add(p1)
+			}
 		}
+
+		wg.Wait()
 		p.Close()
 	}()
 
@@ -28,9 +33,14 @@ func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise)
 	p = makepromise()
 
 	go func() {
+		var wg WaitGroup
 		for a := range in.Q() {
-			test_predicates1(f, a, p, predicates...)
+			if p1 := test_predicates1(f, a, p, predicates...); nil != p1 {
+				wg.Add(p1)
+			}
 		}
+
+		wg.Wait()
 		p.Close()
 	}()
 
@@ -38,7 +48,7 @@ func ListComprGen(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Promise)
 
 }
 
-func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...FuncBool1) {
+func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...FuncBool1) (p *Promise) {
 	trueCnt := 0
 	for _, pred := range predicates {
 		if pred(a) {
@@ -48,8 +58,12 @@ func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, predicates ...Func
 		}
 	}
 	if len(predicates) == trueCnt {
-		outchan.send(f(a))
+		p = Async(func() {
+			outchan.send(f(a))
+		})
 	}
+
+	return
 }
 
 //!!! not tested
@@ -84,6 +98,7 @@ func ListComprGen2(f FuncAny2, a, b *Promise, predicates ...FuncBool2) (p *Promi
 
 func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicates ...FuncBool2) {
 	var tuple *Tuple2
+	var wg WaitGroup
 
 	for data := range promTuple.Q() {
 		tuple = data.(*Tuple2)
@@ -95,9 +110,14 @@ func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, predicat
 				break
 			}
 		}
-		
+
 		if len(predicates) == trueCnt {
-			outchan.send( f(tuple.A, tuple.B) )
+			wg.Add(AsyncAnyN(func(n ...AnyVal) AnyVal {
+				outchan.send(f(n[0], n[1]))
+				return true
+			}, tuple.A, tuple.B))
 		}
 	}
+
+	wg.Wait()
 }

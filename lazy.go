@@ -2,8 +2,8 @@ package fp
 
 // !!! not yet tested
 func Lazy(f FuncAny0) LazyFn {
-	return func() (*Promise) {
-		return Future(func()(ret AnyVal, skip bool) {
+	return func() *Promise {
+		return Future(func() (ret AnyVal, skip bool) {
 			ret = f()
 			return
 		})
@@ -11,10 +11,20 @@ func Lazy(f FuncAny0) LazyFn {
 }
 
 // !!! not yet tested
-func Lazy1(f FuncAny1) (LazyFn1) {
-	return func(a AnyVal) (*Promise) {
-		return Future(func()(ret AnyVal, skip bool) {
+func Lazy1(f FuncAny1) LazyFn1 {
+	return func(a AnyVal) *Promise {
+		return Future(func() (ret AnyVal, skip bool) {
 			ret = f(a)
+			return
+		})
+	}
+}
+
+// !!! not yet tested
+func LazyN(f FuncAnyN) LazyFnN {
+	return func(a ...AnyVal) *Promise {
+		return Future(func() (ret AnyVal, skip bool) {
+			ret = f(a...)
 			return
 		})
 	}
@@ -45,7 +55,6 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 
 // !!! not yet tested
 func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
-	// was purposely set to 0, so, results are received in the expected order
 	p = makepromise()
 	go func() {
 		q := ZipGen2(qL1, qL2)

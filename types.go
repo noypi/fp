@@ -1,20 +1,21 @@
 package fp
 
 import (
-	"sync"
 	"reflect"
+	"sync"
 )
 
 type AnyVal interface{}
 type ChanAny chan AnyVal
 type Promise struct {
-	q ChanAny
-	m sync.Mutex
-	vq reflect.Value
+	q      ChanAny
+	m      sync.Mutex
+	vq     reflect.Value
 	closed bool
 }
 type LazyFn func() *Promise
-type LazyFn1 func(a AnyVal)*Promise
+type LazyFn1 func(a AnyVal) *Promise
+type LazyFnN func(a ...AnyVal) *Promise
 
 type Tuple2 struct {
 	A AnyVal
@@ -43,6 +44,7 @@ type FuncBool2 func(a, b AnyVal) bool
 type FuncAny0 func() AnyVal
 type FuncAny1 func(a AnyVal) AnyVal
 type FuncAny2 func(a, b AnyVal) AnyVal
+type FuncAnyN func(n ...AnyVal) AnyVal
 
 //-
 type Ranger func(Func2, AnyVal, ...int) *Promise
@@ -55,7 +57,7 @@ func (this Promise) Recv() (a AnyVal, ok bool) {
 }
 
 func (this Promise) IsEmpty() bool {
-	return 0==len(this.q)
+	return 0 == len(this.q)
 }
 
 func (this *Promise) Close() {
@@ -65,10 +67,9 @@ func (this *Promise) Close() {
 	this.closed = true
 }
 
-func (this *Promise) Q() ChanAny{
+func (this *Promise) Q() ChanAny {
 	return this.q
 }
-
 
 func (this *Promise) send(a AnyVal) {
 	this.q <- a
@@ -77,7 +78,7 @@ func (this *Promise) send(a AnyVal) {
 func makepromise(chanlen ...int) (p *Promise) {
 	p = new(Promise)
 	if 0 < len(chanlen) {
-		if 0==chanlen[0] {
+		if 0 == chanlen[0] {
 			panic("does not support chanlen=0. could break promise.")
 		}
 		p.q = make(ChanAny, chanlen[0])
