@@ -2,6 +2,8 @@
 
 things that help me simplify my code.
 
+, note: list comprehension's are evaluated asynchronously.
+
 #### Examples
 
 ##### example of implementing a resource using LazyN
