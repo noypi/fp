@@ -4,7 +4,7 @@ things that help me simplify my code.
 
 #### Examples
 
-##### example of creating a resource
+##### example of implementing a resource using LazyN
 
 ```go
 	type Resource struct {
