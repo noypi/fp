@@ -87,6 +87,7 @@ func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
 func LazyInParamsMute(f FuncVoidN, qL *Promise, n ...AnyVal) (p *Promise) {
 	return lazyInParams(func(n ...AnyVal) (ret AnyVal, skip bool) {
 		f(n...)
+		return
 	}, qL, true, n...)
 }
 

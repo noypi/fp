@@ -42,12 +42,16 @@ func (this WaitGroup) Wait() {
 
 }
 
+func Flush(p *Promise) {
+	if nil == p {
+		return
+	}
+	for _ = range p.q {
+	}
+}
+
 func flushchan(a AnyVal) {
 	if c, b := a.(*Promise); b {
-		if nil == c {
-			return
-		}
-		for _ = range c.q {
-		}
+		Flush(c)
 	}
 }
