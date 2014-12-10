@@ -58,8 +58,17 @@ func lazyInParams(f FuncN, qL *Promise, mute bool, n ...AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
 		for a := range qL.Q() {
-			params := append([]AnyVal{a}, n...)
-			if ret, skip := f(params...); !skip {
+			var ret AnyVal
+			var skip bool
+
+			if 0 < len(n) {
+				params := append([]AnyVal{a}, n...)
+				ret, skip = f(params...)
+			} else {
+				ret, skip = f(a)
+			}
+
+			if !skip {
 				if !mute {
 					p.send(ret)
 				}
@@ -75,8 +84,10 @@ func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
 	return lazyInParams(f, qL, false, n...)
 }
 
-func LazyInParamsMute(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
-	return lazyInParams(f, qL, true, n...)
+func LazyInParamsMute(f FuncVoidN, qL *Promise, n ...AnyVal) (p *Promise) {
+	return lazyInParams(func(n ...AnyVal) (ret AnyVal, skip bool) {
+		f(n...)
+	}, qL, true, n...)
 }
 
 // !!! not yet tested

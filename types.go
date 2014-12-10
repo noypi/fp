@@ -36,6 +36,7 @@ type FuncN func(n ...AnyVal) (AnyVal, bool)
 type FuncVoid0 func()
 type FuncVoid1 func(a AnyVal)
 type FuncVoid2 func(a, b AnyVal)
+type FuncVoidN func(n ...AnyVal)
 
 //-
 type FuncBool0 func() bool
