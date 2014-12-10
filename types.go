@@ -23,12 +23,14 @@ type Tuple2 struct {
 }
 
 type FuncQ func() (ares, aerr, anotify AnyVal)
+type FuncMuteQ func(ares, aerr, anotify AnyVal)
 type FuncChainQ func(ares, aerr, anotify AnyVal) (bresult, berror, bnotify AnyVal)
 
 //-
 type Func0 func() (AnyVal, bool)
 type Func1 func(a AnyVal) (AnyVal, bool)
 type Func2 func(a, b AnyVal) (AnyVal, bool)
+type FuncN func(n ...AnyVal) (AnyVal, bool)
 
 //-
 type FuncVoid0 func()

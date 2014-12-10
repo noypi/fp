@@ -54,18 +54,54 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 }
 
 // !!! not yet tested
-func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
+func lazyInParams(f FuncN, qL *Promise, mute bool, n ...AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		q := ZipGen2(qL1, qL2)
-		for a := range q.Q() {
-			tuple := a.(*Tuple2)
-			if ret, skip := f(tuple.A, tuple.B); !skip {
-				p.send(ret)
+		for a := range qL.Q() {
+			params := append([]AnyVal{a}, n...)
+			if ret, skip := f(params...); !skip {
+				if !mute {
+					p.send(ret)
+				}
 			}
 		}
 		p.Close()
 	}()
 
 	return
+}
+
+func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
+	return lazyInParams(f, qL, false, n...)
+}
+
+func LazyInParamsMute(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
+	return lazyInParams(f, qL, true, n...)
+}
+
+// !!! not yet tested
+func lazyIn2(f Func2, qL1, qL2 *Promise, mute bool) (p *Promise) {
+	p = makepromise()
+	go func() {
+		q := ZipGen2(qL1, qL2)
+		for a := range q.Q() {
+			tuple := a.(*Tuple2)
+			if ret, skip := f(tuple.A, tuple.B); !skip {
+				if !mute {
+					p.send(ret)
+				}
+			}
+		}
+		p.Close()
+	}()
+
+	return
+}
+
+func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
+	return lazyIn2(f, qL1, qL2, false)
+}
+
+func LazyInMute2(f Func2, qL1, qL2 *Promise) (p *Promise) {
+	return lazyIn2(f, qL1, qL2, true)
 }
