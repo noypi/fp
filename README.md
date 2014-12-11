@@ -7,6 +7,55 @@ things that help me simplify my code.
 ##### example of implementing a resource using LazyN
 
 ```go
+	func MessageLoop() (ares, aerr, anotify AnyVal) {
+		// read from channel from C's callback'
+		// or wait for incoming message from a websocket =)
+		anotify = some.Pool().(*SomeEvent) // set anotify to receive notification messages
+
+		// set aerr to stop the loop and notifies Qerror
+		aerr = "some error"
+
+		// if anotify is nil and aerr is nil, the loop stops with a notification to Qresult
+		ares = "any value including nil"
+
+		return
+	}
+
+	func OnNotify(val *SomeEvent) {
+		// do something
+	}
+
+	func setupLoop() (wg *WaitGroup){
+		chain := Q(MessageLoop)
+
+		wg := new(WaitGroup)
+
+		// receive notification messages
+		q := Async(LazyInParamsMute(n ...AnyVal){
+
+			OnNotify(n[0].(*SomeEvent))
+
+		}, chain.Qnotify)// can add more parameters, example sender
+
+		wg.Add(q)
+
+		// can also chain handlers
+		chain1 := chain.Bind(...)
+		//-- or
+		chain1b := chain.BindMute(...) // if Qnotify, Qerror, and Qresult is not used
+		
+		return
+	}
+
+	func main() {
+		wg := setupLoop()
+		wg.Wait()
+	}
+```
+
+##### example of implementing a resource using LazyN
+
+```go
 	type Resource struct {
 		fget FuncAnyN
 		fput FuncAnyN
