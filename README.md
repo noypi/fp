@@ -4,7 +4,7 @@ things that help me simplify my code.
 
 #### Examples
 
-##### example of implementing a resource using LazyN
+##### implementing a message loop
 
 ```go
 	func MessageLoop() (ares, aerr, anotify AnyVal) {
