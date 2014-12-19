@@ -56,7 +56,7 @@ func RangeList(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
 		}(i, p)
 	}
 
-	go func() { wg.Wait(); p.Close() }()
+	go func() { wg.Wait(); p.close() }()
 
 	return p
 }
@@ -82,7 +82,7 @@ func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
 		}(vk, p)
 	}
 
-	go func() { wg.Wait(); p.Close() }()
+	go func() { wg.Wait(); p.close() }()
 
 	return p
 }

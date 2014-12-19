@@ -12,7 +12,18 @@ func Future(f Func0) (p *Promise) {
 		if ret, skip := f(); !skip {
 			p.send(ret)
 		}
-		p.Close()
+		p.close()
+	}()
+	return
+}
+
+func fnFutureQ(f Func0, pin *Promise) (p *Promise) {
+	p = pin
+	go func() {
+		if ret, skip := f(); !skip {
+			p.send(ret)
+		}
+		p.close()
 	}()
 	return
 }

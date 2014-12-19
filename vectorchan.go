@@ -41,7 +41,7 @@ func (this *VectorChan) Send(as ...AnyVal) {
 func (this *VectorChan) Close() {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
-	this.q.Close()
+	this.q.close()
 	this.closed = true
 }
 
@@ -55,7 +55,7 @@ func (this *VectorChan) send(x AnyVal) {
 	}
 
 	if 0 == (cap(this.q.q) - len(this.q.q)) {
-		q1 := makepromise(cap(this.q.q)<<1)
+		q1 := makepromise(cap(this.q.q) << 1)
 		close(this.q.q)
 
 		for a := range this.q.q {
@@ -83,7 +83,7 @@ func (this VectorChan) Cap() int {
 func (this *VectorChan) getchan() *Promise {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
-	if nil==this.q {
+	if nil == this.q {
 		this.q = makepromise(cDefaultCapacity)
 	}
 	// can still attempt to read after close, but not send on it

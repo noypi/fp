@@ -13,9 +13,9 @@ func (suite *MySuite) TestListCompr(c *C) {
 	}, list, func(a AnyVal) bool {
 		return 0 == (a.(int) % 2)
 	})
-	
+
 	type _res struct {
-		v AnyVal
+		v  AnyVal
 		ok bool
 	}
 	res := []_res{
@@ -44,7 +44,7 @@ func (suite *MySuite) TestListCompr2(c *C) {
 	})
 
 	type _res struct {
-		v AnyVal
+		v  AnyVal
 		ok bool
 	}
 	res := []_res{

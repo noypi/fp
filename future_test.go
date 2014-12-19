@@ -48,7 +48,7 @@ func (suite *MySuite) TestFuture_x03(c *C) {
 
 func (suite *MySuite) TestPromise_close(c *C) {
 	p := makepromise()
-	p.Close()
+	p.close()
 
 	a, ok := p.Recv()
 	c.Assert(a, Equals, nil)

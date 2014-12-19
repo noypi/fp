@@ -6,7 +6,7 @@ import (
 )
 
 func (suite *MySuite) TestLazy(c *C) {
-/* TODO: fix this
+	/* TODO: fix this
 	seq := []string{}
 
 	qLazy := Lazy(func() AnyVal {
@@ -49,7 +49,7 @@ func (suite *MySuite) TestLazyInAsync1(c *C) {
 		q.send(10)
 		q.send(31)
 		q.send(53)
-		q.Close()
+		q.close()
 	}))
 
 	as := []int{}

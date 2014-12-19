@@ -6,6 +6,7 @@ type ChainQ struct {
 	Qnotify *Promise
 	f       FuncQ
 	fcurry  FuncChainQ
+	fmute   FuncMuteQ
 	nexts   []*ChainQ
 }
 
@@ -43,6 +44,13 @@ func (this *ChainQ) Bind(f FuncChainQ) (cqNew *ChainQ) {
 	return
 }
 
+func (this *ChainQ) BindMute(f FuncMuteQ) (cqNew *ChainQ) {
+	cqNew = NewChain(nil)
+	cqNew.fmute = f
+	this.nexts = append(this.nexts, cqNew)
+	return
+}
+
 // !!!  not tested
 func (this *ChainQ) Intercept(f FuncChainQ) {
 	prevCurry := this.fcurry
@@ -67,9 +75,9 @@ func (this ChainQ) call() (done bool) {
 }
 
 func (this *ChainQ) close() {
-	this.Qnotify.Close()
-	this.Qerror.Close()
-	this.Qresult.Close()
+	this.Qnotify.close()
+	this.Qerror.close()
+	this.Qresult.close()
 
 	for _, next := range this.nexts {
 		next.close()
@@ -81,7 +89,12 @@ func (this *ChainQ) send(ares, aerr, anot AnyVal) (done bool) {
 
 	q := Async(func() {
 		for _, next := range this.nexts {
-			next.fcurry(ares, aerr, anot)
+			if nil != next.fmute {
+				next.fmute(ares, aerr, anot)
+			}
+			if nil != next.fcurry {
+				next.fcurry(ares, aerr, anot)
+			}
 		}
 	})
 

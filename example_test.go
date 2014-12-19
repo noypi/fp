@@ -1,13 +1,28 @@
 package fp_test
 
-func ExampleLazy() {
-	qLazy := Lazy(func() AnyVal {
-		seq = append(seq, "lazy")
-		return 10 + 2
-	})
+func ExampleLazyN() {
+	/*
+		type Resource struct {
+			fget FuncAnyN
+			fput FuncAnyN
+		}
 
-	// ...
-	res := <-<-qLazy // use double arrows
+		func NewResource(fget, fput FuncAnyN) (r *Resource) {
+			r = new(Resource)
+			r.fget = LazyN(fget)
+			r.fput = LazyN(fput)
+			return
+		}
+
+		func (this Resource) Get(n ...AnyVal) (p *Promise) {
+			return r.fget(n...)
+		}
+
+		func (this Resource) Put(n ...AnyVal) (p *Promise) {
+			return r.fput(n...)
+		}
+	*/
+
 }
 
 func ExampleQ() {
@@ -58,17 +73,17 @@ func ExampleQ() {
 	var wg WaitGroup
 
 	wg.Add(Async(func() {
-		for notify_message := range cq.Qnotify {
+		for notify_message := range cq.Qnotify.Q() {
 			log.Printf("%d%%...", notify_message.(int))
 		}
 
 	}), Async(func() {
-		for not1 := range cq1.Qnotify {
+		for not1 := range cq1.Qnotify.Q() {
 			log.Printf("cq1 notify =%v\n", not1)
 		}
 
 	}), Async(func() {
-		for not2 := range cq2.Qnotify {
+		for not2 := range cq2.Qnotify.Q() {
 			log.Printf("\t\tcq2 notify =%v\n", not2)
 		}
 
@@ -76,9 +91,9 @@ func ExampleQ() {
 
 	// waits for a result or an error
 	select {
-	case res := <-cq.Qresult:
+	case res := <-cq.Qresult.Q():
 		log.Println("WrapsAProgressBar result=", res)
-	case err := <-cq.Qerror:
+	case err := <-cq.Qerror.Q():
 		log.Println("WrapsAProgressBar error=", err)
 	}
 
@@ -95,7 +110,6 @@ func ExampleRangeList() {
 		inputs = append(inputs, 15+int(rand.Int31n(15)))
 	}
 
-	// concurrently executes each
 	q := RangeList(func(x, index AnyVal) (ret AnyVal, skip bool) {
 		// assign result to be sent to promise
 		ret = expensive_run_with_res(x.(int))
@@ -105,8 +119,8 @@ func ExampleRangeList() {
 		return
 	}, inputs)
 
-	// receive inputs
-	for a := range q {
+	// print results
+	for a := range q.Q() {
 		log.Println("result a=", a)
 	}
 }
@@ -121,7 +135,7 @@ func ExampleListCompr() {
 	})
 
 	// receive inputs
-	for a := range q {
+	for a := range q.Q() {
 		log.Println("result a=", a)
 	}
 
@@ -138,7 +152,7 @@ func ExampleListCompr2() {
 	})
 
 	// receive inputs
-	for a := range q {
+	for a := range q.Q() {
 		log.Println("result a=", a)
 	}
 
@@ -150,7 +164,7 @@ func ExampleAsync() {
 	})
 
 	// wait
-	<-q
+	q.Recv()
 }
 
 func ExampleWaitGroup() {
@@ -168,8 +182,8 @@ func ExampleWaitGroup() {
 	wg.Wait()
 }
 
-func ExamplePromise() {
-	p := Promise(func() (ret AnyVal, skip bool) {
+func ExampleFuture() {
+	p := Future(func() (ret AnyVal, skip bool) {
 		// do something...
 		ret = 1 // some value
 
@@ -179,9 +193,7 @@ func ExamplePromise() {
 		return
 	})
 
-	for res := range p {
-		// will not be here if skipped
-	}
+	val, ok := p.Recv()
 }
 
 func ExampleChainQ_bind() {
@@ -203,37 +215,9 @@ func ExampleChainQ_bind() {
 
 	// waits for a result or an error
 	select {
-	case res := <-cq1.Qresult:
+	case res := <-cq1.Qresult.Q():
 		log.Println("WrapsAProgressBar result=", res)
-	case err := <-cq1.Qerror:
+	case err := <-cq1.Qerror.Q():
 		log.Println("WrapsAProgressBar error=", err)
 	}
-}
-
-func ExampleLazyIn1() {
-
-	qLazy := make(LazyInChan, 1)
-
-	q1 := LazyIn1(func(x AnyVal) (ret AnyVal, skip bool) {
-		ret = x.(int) * 2
-		return
-	}, qLazy)
-
-	var wg WaitGroup
-	wg.Add(Async(func() {
-		// sends input
-		qLazy <- 10
-		qLazy <- 31
-		qLazy <- 53
-		close(qLazy)
-	}))
-
-	as := []int{}
-	// needs to close qLazy to break from the loop below
-	for a := range q1 {
-		as = append(as, a.(int))
-	}
-
-	wg.Wait()
-
 }

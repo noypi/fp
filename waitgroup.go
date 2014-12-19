@@ -32,7 +32,7 @@ func (this WaitGroup) WaitN(n int) {
 
 func (this WaitGroup) Wait() {
 	for {
-		if 0==this.v.Len() {
+		if 0 == this.v.Len() {
 			break
 		}
 		if x, ok := this.v.Recv(); ok {
@@ -42,13 +42,16 @@ func (this WaitGroup) Wait() {
 
 }
 
+func Flush(p *Promise) {
+	if nil == p {
+		return
+	}
+	for _ = range p.q {
+	}
+}
+
 func flushchan(a AnyVal) {
 	if c, b := a.(*Promise); b {
-		var ok bool
-		for {
-			if _, ok = c.Recv(); !ok {
-				break
-			}
-		}
+		Flush(c)
 	}
 }

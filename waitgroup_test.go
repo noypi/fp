@@ -15,7 +15,7 @@ func (suite *MySuite) TestWaitGroup(c *C) {
 	go func() {
 		time.Sleep(300 * time.Millisecond)
 		ch.send(12)
-		ch.Close()
+		ch.close()
 	}()
 
 	ch1 := makepromise()
@@ -24,7 +24,7 @@ func (suite *MySuite) TestWaitGroup(c *C) {
 	go func() {
 		time.Sleep(300 * time.Millisecond)
 		ch1.send(12)
-		ch1.Close()
+		ch1.close()
 	}()
 
 	wg.Wait()
@@ -38,7 +38,7 @@ func (suite *MySuite) TestWaitGroup1(c *C) {
 	go func() {
 		time.Sleep(300 * time.Millisecond)
 		ch.send(12)
-		ch.Close()
+		ch.close()
 	}()
 
 	ch1 := makepromise()
@@ -47,7 +47,7 @@ func (suite *MySuite) TestWaitGroup1(c *C) {
 	go func() {
 		time.Sleep(300 * time.Millisecond)
 		ch.send(12)
-		ch.Close()
+		ch.close()
 	}()
 
 	wg.WaitN(2)

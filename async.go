@@ -5,8 +5,7 @@ func Async(f FuncVoid0) (p *Promise) {
 	p = makepromise()
 	go func() {
 		f()
-		p.send(true)
-		p.Close()
+		p.close()
 	}()
 	return
 }
@@ -15,7 +14,16 @@ func Async1(f FuncAny1, param AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
 		p.send(f(param))
-		p.Close()
+		p.close()
+	}()
+	return
+}
+
+func AsyncAnyN(f FuncAnyN, param ...AnyVal) (p *Promise) {
+	p = makepromise()
+	go func() {
+		p.send(f(param...))
+		p.close()
 	}()
 	return
 }
