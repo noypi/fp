@@ -52,10 +52,9 @@ type FuncAny2 func(a, b AnyVal) AnyVal
 type FuncAnyN func(n ...AnyVal) AnyVal
 
 //-
-type FuncTick2 func(now, previous time.Time) AnyVal
-
-//-
-type FuncTickBool2 func(now, previous time.Time) bool
+type FuncTickAny func(now, previous time.Time) AnyVal
+type FuncTickBool func(now, previous time.Time) bool
+type FuncTickVoid func(now, previous time.Time)
 
 //-
 type Ranger func(Func2, AnyVal, ...int) *Promise

@@ -43,7 +43,7 @@ func are_all_true1(paramA AnyVal, predicates ...FuncBool1) bool {
 	return len(predicates) == trueCnt
 }
 
-func are_all_tick_true2(paramA, paramB time.Time, predicates ...FuncTickBool2) bool {
+func are_all_tick_true2(paramA, paramB time.Time, predicates ...FuncTickBool) bool {
 	trueCnt := 0
 	for _, pred := range predicates {
 		if pred(paramA, paramB) {
