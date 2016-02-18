@@ -117,7 +117,7 @@ func ExampleQ() {
 
 func ExampleRangeList() {
 	
-	expensive_run_with_res := func(a int) int{}
+	expensive_run_with_res := func(a int)int{ return 0 }
 
 	// populate inputs
 	inputs := []int{}
