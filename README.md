@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/noypi/fp.svg?branch=master)](https://travis-ci.org/noypi/fp)
+
 ### Golang futures, lazy, list comprehension...etc...
 
 things that help me simplify my code.
