@@ -209,6 +209,7 @@ func ExampleFuture() {
 	})
 
 	val, ok := p.Recv()
+	fmt.Println(val, ok)
 }
 
 func ExampleChainQ_bind() {
@@ -235,4 +236,6 @@ func ExampleChainQ_bind() {
 	case err := <-cq1.Qerror.Q():
 		log.Println("WrapsAProgressBar error=", err)
 	}
+	
+	fmt.Println(cq, cq1)
 }
