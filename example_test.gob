@@ -1,5 +1,9 @@
 package fp_test
 
+import (
+	. "github.com/noypi/fp"
+)
+
 func ExampleLazyN() {
 	/*
 		type Resource struct {
