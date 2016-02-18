@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/noypi/fp.svg?branch=master)](https://travis-ci.org/noypi/fp)
+[![GoDoc](https://godoc.org/github.com/noypi/fp?status.png)](http://godoc.org/github.com/noypi/fp)
 
 ### Golang futures, lazy, list comprehension...etc...
 
