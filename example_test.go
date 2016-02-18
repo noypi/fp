@@ -2,7 +2,15 @@ package fp_test
 
 import (
 	. "github.com/noypi/fp"
+	"time"
+	"math/rand"
+	"log"
+	"fmt"
 )
+
+func fb(_ int) {
+	// some slow func
+}
 
 func ExampleLazyN() {
 	/*
@@ -36,6 +44,7 @@ func ExampleQ() {
 		// do something here
 		fb(10)
 		//---
+		var percent int
 
 		// update progressbar
 		if 100 <= percent {
