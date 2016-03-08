@@ -5,6 +5,9 @@
 
 things that help me simplify my code.
 
+### Other projects
+- github.com/fanliao/go-promise
+
 #### Examples
 
 ##### implementing a message loop
