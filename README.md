@@ -1,11 +1,9 @@
 [![Build Status](https://travis-ci.org/noypi/fp.svg?branch=master)](https://travis-ci.org/noypi/fp)
 [![GoDoc](https://godoc.org/github.com/noypi/fp?status.png)](http://godoc.org/github.com/noypi/fp)
 
-### Golang futures, lazy, list comprehension...etc...
+### Golang promise, futures, lazy, list comprehension...etc...
 
-things that help me simplify my code.
-
-### Other projects
+### Other similar projects
 - github.com/fanliao/go-promise
 
 #### Examples
