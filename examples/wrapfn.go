@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	. "github.com/noypi/fp"
 	"log"
 	"math/rand"
-	"time"
 )
 
 func main() {
@@ -17,9 +15,6 @@ func main() {
 
 	// example of using range
 	WrapExpensiveProcessing_WithResult()
-
-	// example of using Q
-	WrapsAProgressBar()
 
 }
 
