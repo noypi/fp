@@ -12,7 +12,6 @@
 
 - inspired by angularjs $q
 - chainable, and async
-- the difference is that a Q is not a promise, use Future or Lazy instead
 
 ```go
 	q := Q(func(a AnyVal) AnyVal {
