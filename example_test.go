@@ -1,11 +1,11 @@
 package fp_test
 
 import (
-	. "github.com/noypi/fp"
-	"time"
-	"math/rand"
-	"log"
 	"fmt"
+	. "github.com/noypi/fp"
+	"log"
+	"math/rand"
+	"time"
 )
 
 func fb(_ int) {
@@ -39,7 +39,7 @@ func ExampleLazyN() {
 
 func ExampleQ() {
 
-	cq := Q(func() (ares, aerr, anotify AnyVal) {
+	cq := ChainQ_old(func() (ares, aerr, anotify AnyVal) {
 
 		// do something here
 		fb(10)
@@ -116,8 +116,8 @@ func ExampleQ() {
 }
 
 func ExampleRangeList() {
-	
-	expensive_run_with_res := func(a int)int{ return 0 }
+
+	expensive_run_with_res := func(a int) int { return 0 }
 
 	// populate inputs
 	inputs := []int{}
@@ -214,7 +214,7 @@ func ExampleFuture() {
 
 func ExampleChainQ_bind() {
 
-	cq := Q(func() (ares, aerr, anotify AnyVal) {
+	cq := ChainQ_old(func() (ares, aerr, anotify AnyVal) {
 		// do something...
 		return
 	})
@@ -236,6 +236,6 @@ func ExampleChainQ_bind() {
 	case err := <-cq1.Qerror.Q():
 		log.Println("WrapsAProgressBar error=", err)
 	}
-	
+
 	fmt.Println(cq, cq1)
 }

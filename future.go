@@ -1,6 +1,6 @@
 package fp
 
-func Q(f FuncQ) (cq *ChainQ) {
+func ChainQ_old(f FuncQ) (cq *ChainQ) {
 	cq = NewChain(f)
 	cq.Run()
 	return
