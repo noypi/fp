@@ -33,6 +33,7 @@ func (this *Promise) send(a AnyVal) {
 func Fcall(v AnyVal) *Promise {
 	p := makepromise()
 	p.q <- v
+	close(p.q)
 	return p
 }
 
