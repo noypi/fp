@@ -5,7 +5,6 @@ import (
 	. "github.com/noypi/fp"
 	"log"
 	"math/rand"
-	"time"
 )
 
 func fb(_ int) {
@@ -39,79 +38,24 @@ func ExampleLazyN() {
 
 func ExampleQ() {
 
-	cq := ChainQ_old(func() (ares, aerr, anotify AnyVal) {
-
-		// do something here
-		fb(10)
-		//---
-		var percent int
-
-		// update progressbar
-		if 100 <= percent {
-			ares = "It works! Successfully loaded Q! =)"
-		} else {
-			time.Sleep(300 * time.Millisecond)
-			percent += int(rand.Int31n(10))
-			anotify = percent
-		}
-
-		return
+	q := Q(func(a AnyVal) AnyVal {
+		return "from success1"
 	})
 
-	// chain 1
-	cq1 := cq.Bind(func(ares, aerr, anot AnyVal) (bres, berr, bnot AnyVal) {
-		log.Printf("\t chain 1 anot=%v, ares=%v\n", anot, ares)
-		if nil != anot {
-			bnot = fmt.Sprintf("from chain1 anot=%v", anot)
-		} else {
-			bres = fmt.Sprintf("from chain1 ares=%v", ares)
-		}
-		return
+	q.OnSuccess(func(a AnyVal) AnyVal {
+		return "from success 2"
 	})
 
-	// chain 2
-	cq2 := cq1.Bind(func(ares, aerr, anot AnyVal) (bres, berr, bnot AnyVal) {
-		log.Printf("\tchain 2 anot=%v, ares=%v", anot, ares)
-
-		if nil != anot {
-			bnot = fmt.Sprintf("from chain2 anot=%v", anot)
-		} else {
-			bres = fmt.Sprintf("from chain2 ares=%v", ares)
-		}
-
-		return
+	q.OnDone(func(a AnyVal) AnyVal {
+		return "from done 1"
 	})
 
-	// run progressbar updates asynchronously
-	var wg WaitGroup
+	qres, qsig := q.Call(func(s QSignal) {
+		s.Resolve("resolved!")
+	})
 
-	wg.Add(Async(func() {
-		for notify_message := range cq.Qnotify.Q() {
-			log.Printf("%d%%...", notify_message.(int))
-		}
-
-	}), Async(func() {
-		for not1 := range cq1.Qnotify.Q() {
-			log.Printf("cq1 notify =%v\n", not1)
-		}
-
-	}), Async(func() {
-		for not2 := range cq2.Qnotify.Q() {
-			log.Printf("\t\tcq2 notify =%v\n", not2)
-		}
-
-	}))
-
-	// waits for a result or an error
-	select {
-	case res := <-cq.Qresult.Q():
-		log.Println("WrapsAProgressBar result=", res)
-	case err := <-cq.Qerror.Q():
-		log.Println("WrapsAProgressBar error=", err)
-	}
-
-	// waits for notify's goroutine to finish running
-	wg.Wait()
+	fmt.Println("result=", <-qres.Q())
+	fmt.Println(qsig.HaveSucceeded())
 
 }
 
@@ -210,32 +154,4 @@ func ExampleFuture() {
 
 	val, ok := p.Recv()
 	fmt.Println(val, ok)
-}
-
-func ExampleChainQ_bind() {
-
-	cq := ChainQ_old(func() (ares, aerr, anotify AnyVal) {
-		// do something...
-		return
-	})
-
-	// chain 1
-	cq1 := cq.Bind(func(ares, aerr, anot AnyVal) (bres, berr, bnot AnyVal) {
-		if nil != anot {
-			bnot = fmt.Sprintf("from chain1 anot=%v", anot)
-		} else {
-			bres = fmt.Sprintf("from chain1 ares=%v", ares)
-		}
-		return
-	})
-
-	// waits for a result or an error
-	select {
-	case res := <-cq1.Qresult.Q():
-		log.Println("WrapsAProgressBar result=", res)
-	case err := <-cq1.Qerror.Q():
-		log.Println("WrapsAProgressBar error=", err)
-	}
-
-	fmt.Println(cq, cq1)
 }

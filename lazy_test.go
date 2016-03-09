@@ -35,37 +35,3 @@ func (suite *MySuite) TestLazy(c *C) {
 	c.Assert(res, Equals, 12)
 	*/
 }
-
-func (suite *MySuite) TestLazyInAsync1(c *C) {
-	q := makepromise()
-
-	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, skip bool) {
-		ret = x.(int) * 2
-		return
-	}, q)
-
-	var wg WaitGroup
-	wg.Add(Async(func() {
-		q.send(10)
-		q.send(31)
-		q.send(53)
-		q.close()
-	}))
-
-	as := []int{}
-	for {
-		if a, ok := q1.Recv(); ok {
-			as = append(as, a.(int))
-		} else {
-			break
-		}
-	}
-
-	c.Assert(len(as), Equals, 3)
-	c.Assert(as[0], Equals, 20)
-	c.Assert(as[1], Equals, 62)
-	c.Assert(as[2], Equals, 106)
-
-	wg.Wait()
-
-}
