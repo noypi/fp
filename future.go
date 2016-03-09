@@ -1,11 +1,5 @@
 package fp
 
-func ChainQ_old(f FuncQ) (cq *ChainQ) {
-	cq = NewChain(f)
-	cq.Run()
-	return
-}
-
 func Future(f Func0) (p *Promise) {
 	p = makepromise()
 	go func() {
