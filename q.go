@@ -68,9 +68,6 @@ func (this *_Q) CallAll(fns ...func(s QSignal)) (qps []*Promise) {
 		qps[i] = s.qdone()
 		go func() {
 			fn(s)
-			if s.succeeded == s.rejected {
-				s.Done(nil, true)
-			}
 		}()
 	}
 
