@@ -30,6 +30,12 @@ func (this *Promise) send(a AnyVal) {
 	this.q <- a
 }
 
+func Fcall(v AnyVal) *Promise {
+	p := makepromise()
+	p.q <- v
+	return p
+}
+
 func makepromise(chanlen ...int) (p *Promise) {
 	p = new(Promise)
 	if 0 < len(chanlen) {
