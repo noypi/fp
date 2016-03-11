@@ -48,12 +48,7 @@ func (this *_Q) Call(fn func(s QSignal)) (qp *Promise, qsig QSignal) {
 	s := &qsignal{q: this}
 	qsig = s
 	qp = s.qdone()
-	go func() {
-		fn(s)
-		if s.succeeded == s.rejected {
-			s.Done(nil, true)
-		}
-	}()
+	go fn(s)
 	return
 }
 
@@ -66,9 +61,7 @@ func (this *_Q) CallAll(fns ...func(s QSignal)) (qps []*Promise) {
 	for i, fn := range fns {
 		s := &qsignal{q: this}
 		qps[i] = s.qdone()
-		go func() {
-			fn(s)
-		}()
+		go fn(s)
 	}
 
 	return

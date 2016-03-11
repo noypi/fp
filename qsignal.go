@@ -39,14 +39,7 @@ func (this *qsignal) execEach(as []LazyFn1, param AnyVal) (out *Promise) {
 		return
 	}
 
-	var bs []LazyFn1
-	{ //lock
-		this.q.syncq.Lock()
-		bs = as[0:]
-		this.q.syncq.Unlock()
-	}
-
-	for _, fn := range bs {
+	for _, fn := range as[0:] {
 		param = fn(param)
 	}
 
