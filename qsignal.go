@@ -25,8 +25,8 @@ func (this qsignal) IsRejected() bool {
 
 func (this *qsignal) qdone() *Promise {
 	this.qdonechan = make(ChanAny, 1)
-	return Future(func() (AnyVal, bool) {
-		return <-this.qdonechan, false
+	return Future(func() (AnyVal, error) {
+		return <-this.qdonechan, nil
 	})
 }
 

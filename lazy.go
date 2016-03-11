@@ -3,9 +3,8 @@ package fp
 // !!! not yet tested
 func Lazy(f FuncAny0) LazyFn {
 	return func() *Promise {
-		return Future(func() (ret AnyVal, skip bool) {
-			ret = f()
-			return
+		return Future(func() (AnyVal, error) {
+			return f(), nil
 		})
 	}
 }
@@ -13,9 +12,8 @@ func Lazy(f FuncAny0) LazyFn {
 // !!! not yet tested
 func Lazy1(f FuncAny1) LazyFn1 {
 	return func(a AnyVal) *Promise {
-		return Future(func() (ret AnyVal, skip bool) {
-			ret = f(a)
-			return
+		return Future(func() (AnyVal, error) {
+			return f(a), nil
 		})
 	}
 }
@@ -23,9 +21,8 @@ func Lazy1(f FuncAny1) LazyFn1 {
 // !!! not yet tested
 func LazyN(f FuncAnyN) LazyFnN {
 	return func(a ...AnyVal) *Promise {
-		return Future(func() (ret AnyVal, skip bool) {
-			ret = f(a...)
-			return
+		return Future(func() (AnyVal, error) {
+			return f(a...), nil
 		})
 	}
 }
@@ -39,8 +36,7 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 	go func() {
 		for x := range qL.Q() {
 			wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
-				var skip bool
-				if ret, skip = f(a); !skip {
+				if ret, p.err = f(a); nil == p.err {
 					p.send(ret)
 				}
 				return
@@ -59,16 +55,17 @@ func lazyInParams(f FuncN, qL *Promise, mute bool, n ...AnyVal) (p *Promise) {
 	go func() {
 		for a := range qL.Q() {
 			var ret AnyVal
-			var skip bool
+			var err error
 
 			if 0 < len(n) {
 				params := append([]AnyVal{a}, n...)
-				ret, skip = f(params...)
+				ret, err = f(params...)
 			} else {
-				ret, skip = f(a)
+				ret, err = f(a)
 			}
 
-			if !skip {
+			p.err = err
+			if nil != err {
 				if !mute {
 					p.send(ret)
 				}
@@ -85,9 +82,9 @@ func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
 }
 
 func LazyInParamsMute(f FuncVoidN, qL *Promise, n ...AnyVal) (p *Promise) {
-	return lazyInParams(func(n ...AnyVal) (ret AnyVal, skip bool) {
+	return lazyInParams(func(n ...AnyVal) (AnyVal, error) {
 		f(n...)
-		return
+		return nil, nil
 	}, qL, true, n...)
 }
 
@@ -98,7 +95,9 @@ func lazyIn2(f Func2, qL1, qL2 *Promise, mute bool) (p *Promise) {
 		q := ZipGen2(qL1, qL2)
 		for a := range q.Q() {
 			tuple := a.(*Tuple2)
-			if ret, skip := f(tuple.A, tuple.B); !skip {
+			ret, err := f(tuple.A, tuple.B)
+			p.err = err
+			if nil == p.err {
 				if !mute {
 					p.send(ret)
 				}

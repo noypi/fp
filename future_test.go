@@ -7,7 +7,7 @@ import (
 )
 
 func (suite *MySuite) TestFuture_x01(c *C) {
-	p := Future(func() (ret AnyVal, skip bool) {
+	p := Future(func() (ret AnyVal, err error) {
 		ret = 1
 		return
 	})
@@ -25,7 +25,7 @@ func (suite *MySuite) TestFuture_x01(c *C) {
 func (suite *MySuite) TestFuture_x03(c *C) {
 
 	didCall := false
-	p := Future(func() (ret AnyVal, skip bool) {
+	p := Future(func() (ret AnyVal, err error) {
 		fmt.Print("adrian guwapo")
 		didCall = true
 		return

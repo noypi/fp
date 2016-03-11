@@ -1,6 +1,7 @@
 package fp_test
 
 import (
+	"errors"
 	"fmt"
 	. "github.com/noypi/fp"
 	"log"
@@ -69,11 +70,13 @@ func ExampleRangeList() {
 		inputs = append(inputs, 15+int(rand.Int31n(15)))
 	}
 
-	q := RangeList(func(x, index AnyVal) (ret AnyVal, skip bool) {
+	q := RangeList(func(x, index AnyVal) (ret AnyVal, err error) {
 		// assign result to be sent to promise
 		ret = expensive_run_with_res(x.(int))
 		// ignore some elements
-		skip = (0 == (index.(int) % 2))
+		if 0 == (index.(int) % 2) {
+			err = errors.New("some error")
+		}
 		// -- can also ignore base on ret?
 		return
 	}, inputs)
@@ -142,13 +145,13 @@ func ExampleWaitGroup() {
 }
 
 func ExampleFuture() {
-	p := Future(func() (ret AnyVal, skip bool) {
+	p := Future(func() (ret AnyVal, err error) {
 		// do something...
 		ret = 1 // some value
 
 		// default is false
 		// if true, the result will not be sent to the promise channel
-		skip = false
+		err = nil
 		return
 	})
 

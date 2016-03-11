@@ -4,7 +4,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (suite *MySuite) TestSuccess(c *C) {
+func doTestSuccess(c *C) {
 
 	results := []string{}
 
@@ -35,4 +35,10 @@ func (suite *MySuite) TestSuccess(c *C) {
 	c.Assert(qsig.IsRejected(), Equals, false)
 	c.Assert(qsig.HaveSucceeded(), Equals, true)
 
+}
+
+func (suite *MySuite) TestSuccess(c *C) {
+	for i := 0; i < 1000; i++ {
+		go doTestSuccess(c)
+	}
 }

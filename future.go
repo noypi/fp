@@ -3,7 +3,9 @@ package fp
 func Future(f Func0) (p *Promise) {
 	p = makepromise()
 	go func() {
-		if ret, skip := f(); !skip {
+		ret, err := f()
+		p.err = err
+		if nil == p.err {
 			p.send(ret)
 		}
 		p.close()
@@ -14,7 +16,9 @@ func Future(f Func0) (p *Promise) {
 func Future1(f Func1, param AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		if ret, skip := f(param); !skip {
+		ret, err := f(param)
+		p.err = err
+		if nil == p.err {
 			p.send(ret)
 		}
 		p.close()
@@ -25,7 +29,9 @@ func Future1(f Func1, param AnyVal) (p *Promise) {
 func FutureN(f FuncN, params ...AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		if ret, skip := f(params...); !skip {
+		ret, err := f(params...)
+		p.err = err
+		if nil == p.err {
 			p.send(ret)
 		}
 		p.close()
@@ -36,7 +42,9 @@ func FutureN(f FuncN, params ...AnyVal) (p *Promise) {
 func fnFutureQ(f Func0, pin *Promise) (p *Promise) {
 	p = pin
 	go func() {
-		if ret, skip := f(); !skip {
+		ret, err := f()
+		p.err = err
+		if nil == p.err {
 			p.send(ret)
 		}
 		p.close()

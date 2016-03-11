@@ -12,6 +12,7 @@ type Promise struct {
 	q      ChanAny
 	m      sync.Mutex
 	vq     reflect.Value
+	err    error
 	closed bool
 }
 type LazyFn func() *Promise
@@ -28,10 +29,10 @@ type FuncMuteQ func(ares, aerr, anotify AnyVal)
 type FuncChainQ func(ares, aerr, anotify AnyVal) (bresult, berror, bnotify AnyVal)
 
 //-
-type Func0 func() (AnyVal, bool)
-type Func1 func(a AnyVal) (AnyVal, bool)
-type Func2 func(a, b AnyVal) (AnyVal, bool)
-type FuncN func(n ...AnyVal) (AnyVal, bool)
+type Func0 func() (AnyVal, error)
+type Func1 func(a AnyVal) (AnyVal, error)
+type Func2 func(a, b AnyVal) (AnyVal, error)
+type FuncN func(n ...AnyVal) (AnyVal, error)
 
 //-
 type FuncVoid0 func()

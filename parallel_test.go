@@ -1,13 +1,14 @@
 package fp
 
 import (
+	"errors"
 	. "gopkg.in/check.v1"
 )
 
 func (suite *MySuite) TestRangeList(c *C) {
 	list := []int{1, 2, 3, 4, 5}
 
-	p := RangeList(func(a, i AnyVal) (ret AnyVal, skip bool) {
+	p := RangeList(func(a, i AnyVal) (ret AnyVal, err error) {
 		c.Log("i=", i)
 		ret = a.(int) * 3
 		return
@@ -30,11 +31,11 @@ func (suite *MySuite) TestRangeDict(c *C) {
 		"papa":  31,
 	}
 
-	p := RangeDict(func(v, k AnyVal) (ret AnyVal, skip bool) {
+	p := RangeDict(func(v, k AnyVal) (ret AnyVal, err error) {
 		c.Logf("v=%v, k=%v", v, k)
 		ret = v
 		if v.(int) != 4 {
-			skip = true
+			err = errors.New("some error")
 		}
 		return
 	}, list)
@@ -53,10 +54,10 @@ func (suite *MySuite) TestRangeDict(c *C) {
 }
 
 func (suite *MySuite) Disable_TestParallelLoop(c *C) {
-	q := ParallelLoop(func(a, i AnyVal) (ret AnyVal, skip bool) {
+	q := ParallelLoop(func(a, i AnyVal) (ret AnyVal, err error) {
 		ret = a
 		return
-	}, func(a AnyVal) (ret AnyVal, skip bool) {
+	}, func(a AnyVal) (ret AnyVal, err error) {
 		ret = a.(int) * 2
 		return
 	}, []int{10, 31, 53})

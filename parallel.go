@@ -28,7 +28,7 @@ func ParallelLoop(af Func2, bf Func1, aListOrMap AnyVal, chanlen ...int) (p *Pro
 
 	q1 := Range(af, aListOrMap)
 
-	p = LazyInAsync1(func(a AnyVal) (ret AnyVal, skip bool) {
+	p = LazyInAsync1(func(a AnyVal) (AnyVal, error) {
 		return bf(a)
 	}, q1, chanlen...)
 
@@ -51,7 +51,9 @@ func RangeList(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
 	for i := 0; i < n; i++ {
 		go func(index int, ch *Promise) {
 			qtmp <- true
-			if ret, skip := f(v.Index(index).Interface(), index); !skip {
+			ret, err := f(v.Index(index).Interface(), index)
+			p.err = err
+			if nil == err {
 				ch.send(ret)
 			}
 			wg.Done()
@@ -79,7 +81,9 @@ func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
 	for _, vk := range v.MapKeys() {
 		go func(vk reflect.Value, ch *Promise) {
 			qtmp <- true
-			if ret, skip := f(v.MapIndex(vk).Interface(), vk.Interface()); !skip {
+			ret, err := f(v.MapIndex(vk).Interface(), vk.Interface())
+			ch.err = err
+			if nil == ch.err {
 				ch.send(ret)
 			}
 			wg.Done()

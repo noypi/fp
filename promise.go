@@ -30,6 +30,14 @@ func (this *Promise) send(a AnyVal) {
 	this.q <- a
 }
 
+func (this Promise) HasError() bool {
+	return nil != this.err
+}
+
+func (this Promise) Error() error {
+	return this.err
+}
+
 func Fcall(v AnyVal) *Promise {
 	p := makepromise()
 	p.q <- v

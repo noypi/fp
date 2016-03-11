@@ -33,11 +33,11 @@ func Q(fns ...FuncAny1) (q *_Q) {
 
 func AllSettled(as ...*Promise) *Promise {
 	bs := make([]AnyVal, len(as))
-	return Future(func() (AnyVal, bool) {
+	return Future(func() (AnyVal, error) {
 		for i := 0; i < len(bs); i++ {
 			bs[i] = <-as[i].Q()
 		}
-		return bs, false
+		return bs, nil
 	})
 }
 
