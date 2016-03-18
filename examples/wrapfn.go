@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	. "github.com/noypi/fp"
 	"log"
 	"math/rand"
@@ -37,7 +38,7 @@ func WrapALazyFunctionSample() {
 
 	as := []int{26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2}
 	// range will concurrently execute each
-	qLazy := Range(func(a, i AnyVal) (ret AnyVal, skip bool) {
+	qLazy := Range(func(a, i AnyVal) (ret AnyVal, err error) {
 		ret = &Tuple2{
 			A: a,
 			B: i,
@@ -45,7 +46,7 @@ func WrapALazyFunctionSample() {
 		return
 	}, as)
 
-	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, skip bool) {
+	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, err error) {
 		ret = fb(x.(*Tuple2).A.(int))
 		return
 	}, qLazy)
@@ -104,11 +105,13 @@ func WrapExpensiveProcessing_WithResult() {
 		inputs = append(inputs, 15+int(rand.Int31n(15)))
 	}
 
-	q := RangeList(func(x, index AnyVal) (ret AnyVal, skip bool) {
+	q := RangeList(func(x, index AnyVal) (ret AnyVal, err error) {
 		// assign result to be sent to promise
 		ret = expensive_run_with_res(x.(int))
 		// ignore some elements
-		skip = (0 == (index.(int) % 2))
+		if 0 == (index.(int) % 2) {
+			err = errors.New("some error")
+		}
 		// -- can also ignore base on ret?
 		return
 	}, inputs)
