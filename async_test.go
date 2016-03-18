@@ -10,7 +10,7 @@ func (suite *MySuite) TestAsync(c *C) {
 	ns := []int{}
 	executed := false
 	q := Async(func() {
-		ns = append(ns, 1)
+		ns = append(ns, len(ns))
 		executed = true
 		time.Sleep(300 * time.Millisecond)
 	})
