@@ -55,7 +55,7 @@ func (this *qsignal) Reject(result AnyVal) (out *Promise) {
 	if nil == out {
 		param = result
 	}
-	this.Done(param, false)
+	this.done(param, false)
 	return nil
 }
 
@@ -65,7 +65,7 @@ func (this *qsignal) Resolve(result AnyVal) (out *Promise) {
 	if nil == out {
 		param = result
 	}
-	this.Done(param, true)
+	this.done(param, true)
 	return nil
 }
 
@@ -74,7 +74,7 @@ func (this *qsignal) Notify(result AnyVal) (out *Promise) {
 	return nil
 }
 
-func (this *qsignal) Done(result AnyVal, succeed bool) (out *Promise) {
+func (this *qsignal) done(result AnyVal, succeed bool) (out *Promise) {
 	out = this.execEach(append(this.q.done, wrapcb(this.lastdone(succeed))), result)
 	return nil
 }
