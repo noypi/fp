@@ -22,6 +22,12 @@ func (this *Promise) close() {
 	this.closed = true
 }
 
+func (this *Promise) Then(fn func(a AnyVal) AnyVal) (p *Promise) {
+	return Future(func() (AnyVal, error) {
+		return fn(<-this.q), nil
+	})
+}
+
 func (this *Promise) Q() ChanAny {
 	return this.q
 }
