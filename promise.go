@@ -22,9 +22,19 @@ func (this *Promise) close() {
 	this.closed = true
 }
 
-func (this *Promise) Then(fn func(a AnyVal) AnyVal) (p *Promise) {
+func (this *Promise) Then(fn ...Func0) (p *Promise) {
 	return Future(func() (AnyVal, error) {
-		return fn(<-this.q), nil
+		res := <-this.q
+		if this.HasError() {
+			if 1 < len(fns) {
+				return fns[1](this.Error())
+			}
+		} else {
+			if 0 < len(fns) {
+				return fns[0](res)
+			}
+		}
+		return nil, nil
 	})
 }
 
