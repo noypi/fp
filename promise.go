@@ -22,7 +22,7 @@ func (this *Promise) close() {
 	this.closed = true
 }
 
-func (this *Promise) Then(fn ...Func0) (p *Promise) {
+func (this *Promise) Then(fns ...Func1) (p *Promise) {
 	return Future(func() (AnyVal, error) {
 		res := <-this.q
 		if this.HasError() {
