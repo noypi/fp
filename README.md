@@ -14,24 +14,19 @@
 - chainable, and async
 
 ```go
-	q := Q(func(a AnyVal) AnyVal {
-		return "from success1"
+	q := Future(func() (AnyVal, error) {
+		// do some work
+		return "resolved", errors.New("failed")
 	})
 
-	q.OnSuccess(func(a AnyVal) AnyVal {
-		return "from success 2"
+	q = q.Then(func(a AnyVal) (AnyVal, error) {
+		// on resolved
+		return "resolved", errors.New("failed")
+	}, func(a AnyVal) (AnyVal, error) {
+		// on error
+		return "resolved", errors.New("failed")
 	})
 
-	q.OnDone(func(a AnyVal) AnyVal {
-		return "from done 1"
-	})
-
-	qres, qsig := q.Call(func(s QSignal) {
-		s.Resolve("resolved!")
-	})
-
-	fmt.Println("result=", <-qres.Q())
-	fmt.Println(qsig.HaveSucceeded())
 ```
 
 ##### example of implementing a resource using LazyN
