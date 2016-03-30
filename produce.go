@@ -2,6 +2,11 @@ package fp
 
 //!! not yet tested
 func ProduceWhileFn(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
+	return produceWhile(f, predicates...)
+}
+
+// produceWhile is also used by tickwhile
+func produceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	go func() {
 		var a AnyVal
