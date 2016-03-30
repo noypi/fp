@@ -7,9 +7,9 @@ import (
 )
 
 type AnyVal interface{}
-type ChanAny chan AnyVal
+type qChan chan *qMsg
 type Promise struct {
-	q      ChanAny
+	q      qChan
 	m      sync.Mutex
 	vq     reflect.Value
 	err    error
@@ -18,6 +18,11 @@ type Promise struct {
 type LazyFn func() *Promise
 type LazyFn1 func(a AnyVal) *Promise
 type LazyFnN func(a ...AnyVal) *Promise
+
+type qMsg struct {
+	a   AnyVal
+	err error
+}
 
 type Tuple2 struct {
 	A AnyVal

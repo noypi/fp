@@ -1,8 +1,11 @@
 package fp
 
 import (
-	. "gopkg.in/check.v1"
+	"fmt"
+	"reflect"
 	"time"
+
+	. "gopkg.in/check.v1"
 )
 
 func (suite *MySuite) TestTickWhile(c *C) {
@@ -16,11 +19,22 @@ func (suite *MySuite) TestTickWhile(c *C) {
 	})
 
 	var prevPrev time.Time
-	q.Recv()
-	for prev := range q.Q() {
-		c.Log("prev=", prev, "prevPrev=", prevPrev)
-		c.Assert(prevPrev.Before(prev.(time.Time)), Equals, true)
+
+	i := 0
+	Flush(q.Then(func(prev AnyVal) (res AnyVal, err error) {
+		fmt.Println("i=", i, "prev=", prev, "prevPrev=", prevPrev)
+		if 0 < i {
+			if !reflect.DeepEqual(prevPrev.Before(prev.(time.Time)), true) {
+				panic("not equal")
+			}
+		}
 		prevPrev = prev.(time.Time)
-	}
+		i++
+
+		return nil, nil
+
+	}))
+
+	c.Assert(i, Equals, 4)
 
 }

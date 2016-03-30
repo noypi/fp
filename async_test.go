@@ -1,8 +1,9 @@
 package fp
 
 import (
-	. "gopkg.in/check.v1"
 	"time"
+
+	. "gopkg.in/check.v1"
 )
 
 func (suite *MySuite) TestAsync(c *C) {
@@ -16,8 +17,9 @@ func (suite *MySuite) TestAsync(c *C) {
 	})
 
 	ns = append(ns, 0)
-	q.Recv()
+	Flush(q)
 	ns = append(ns, 2)
+
 	c.Assert(executed, Equals, true)
 	c.Assert(len(ns), Equals, 3)
 	c.Assert(ns[0], Equals, 0)

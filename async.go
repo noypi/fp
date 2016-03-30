@@ -13,7 +13,9 @@ func Async(f FuncVoid0) (p *Promise) {
 func Async1(f FuncAny1, param AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		p.send(f(param))
+		msg := new(qMsg)
+		msg.a = f(param)
+		p.send(msg)
 		p.close()
 	}()
 	return
@@ -22,7 +24,9 @@ func Async1(f FuncAny1, param AnyVal) (p *Promise) {
 func AsyncAnyN(f FuncAnyN, param ...AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		p.send(f(param...))
+		msg := new(qMsg)
+		msg.a = f(param...)
+		p.send(msg)
 		p.close()
 	}()
 	return

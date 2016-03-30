@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
-	. "github.com/noypi/fp"
 	"log"
 	"math/rand"
+
+	. "github.com/noypi/fp"
 )
 
 func main() {
@@ -52,9 +53,12 @@ func WrapALazyFunctionSample() {
 	}, qLazy)
 
 	// print results
-	for a := range q1.Q() {
+	var wg WaitGroup
+	wg.Add(q1.Then(func(a AnyVal) (AnyVal, error) {
 		log.Printf("ret=%d\n", a)
-	}
+		return "resolved", nil
+	}))
+	wg.Wait()
 
 }
 
@@ -117,7 +121,10 @@ func WrapExpensiveProcessing_WithResult() {
 	}, inputs)
 
 	// print results
-	for a := range q.Q() {
-		log.Println("result a=", a)
-	}
+	var wg WaitGroup
+	wg.Add(q.Then(func(a AnyVal) (AnyVal, error) {
+		log.Printf("ret=%d\n", a)
+		return nil, errors.New("failed")
+	}))
+	wg.Wait()
 }

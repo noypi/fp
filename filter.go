@@ -5,7 +5,7 @@ func FilterGen(q *Promise, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	go func() {
 		for a := range q.q {
-			if are_all_true1(a, predicates...) {
+			if are_all_true1(a.a, predicates...) {
 				q.send(a)
 			}
 		}

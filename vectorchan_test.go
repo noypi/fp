@@ -11,8 +11,8 @@ func (suite *MySuite) TestVectorChan(c *C) {
 	c.Assert(v.Len(), Equals, 1)
 	c.Assert(v.Cap(), Equals, 4)
 
-	ch.send(12)
-	ch.send(14)
+	ch.send(&qMsg{a: 12})
+	ch.send(&qMsg{a: 14})
 	c.Assert(v.Len(), Equals, 1)
 
 	// full
@@ -27,17 +27,17 @@ func (suite *MySuite) TestVectorChan(c *C) {
 	c.Assert(v.Len(), Equals, 9)
 	c.Assert(v.Cap(), Equals, 16)
 
-	ch1, _ := v.Recv()
+	ch1 := <-v.getchan()
 
-	a, _ := ch1.(*Promise).Recv()
-	c.Assert(a, Equals, 12)
-	a, _ = ch1.(*Promise).Recv()
-	c.Assert(a, Equals, 14)
+	a := <-ch1.(*Promise).q
+	c.Assert(a.a, Equals, 12)
+	a = <-ch1.(*Promise).q
+	c.Assert(a.a, Equals, 14)
 	c.Assert(v.Len(), Equals, 8)
 	c.Assert(v.Cap(), Equals, 16)
 
 	// var params
-	qs := []*Promise{}
+	qs := []AnyVal{}
 	for i := 0; i < 9; i++ {
 		qs = append(qs, makepromise())
 	}

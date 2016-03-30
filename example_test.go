@@ -2,7 +2,6 @@ package fp_test
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 
@@ -76,10 +75,12 @@ func ExampleRangeList() {
 		return
 	}, inputs)
 
-	// print results
-	for a := range q.Q() {
-		log.Println("result a=", a)
-	}
+	var wg WaitGroup
+	wg.Add(q.Then(func(a AnyVal) (AnyVal, error) {
+		log.Printf("ret=%d\n", a)
+		return "resolved", nil
+	}))
+	wg.Wait()
 }
 
 func ExampleListCompr() {
@@ -92,9 +93,10 @@ func ExampleListCompr() {
 	})
 
 	// receive inputs
-	for a := range q.Q() {
+	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
 		log.Println("result a=", a)
-	}
+		return "resolved", nil
+	}))
 
 }
 
@@ -109,9 +111,10 @@ func ExampleListCompr2() {
 	})
 
 	// receive inputs
-	for a := range q.Q() {
+	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
 		log.Println("result a=", a)
-	}
+		return "resolved", nil
+	}))
 
 }
 
@@ -121,7 +124,7 @@ func ExampleAsync() {
 	})
 
 	// wait
-	q.Recv()
+	Flush(q)
 }
 
 func ExampleWaitGroup() {
@@ -150,6 +153,8 @@ func ExampleFuture() {
 		return
 	})
 
-	val, ok := p.Recv()
-	fmt.Println(val, ok)
+	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+		log.Println("result a=", a)
+		return "resolved", nil
+	}))
 }

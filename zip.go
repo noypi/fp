@@ -15,10 +15,12 @@ func Zip2(alist, blist AnyVal) (p *Promise) {
 	go func() {
 		for i := 0; i < av.Len(); i++ {
 			if i < bv.Len() {
-				p.send(&Tuple2{
-					A: av.Index(i).Interface(),
-					B: bv.Index(i).Interface(),
-				})
+				tuple := new(Tuple2)
+				tuple.A = av.Index(i).Interface()
+				tuple.B = bv.Index(i).Interface()
+				msg := new(qMsg)
+				msg.a = tuple
+				p.send(msg)
 			} else {
 				break
 			}
@@ -58,12 +60,12 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 			if 0 == chosen {
 				x = xyi.Interface()
 				if ok {
-					y, ok = b.Recv()
+					y = (<-b.q).a
 				}
 			} else {
 				y = xyi.Interface()
 				if ok {
-					x, ok = a.Recv()
+					x = (<-a.q).a
 				}
 			}
 
@@ -71,10 +73,13 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 				break
 			}
 
-			p.send(&Tuple2{
-				A: x,
-				B: y,
-			})
+			tuple := new(Tuple2)
+			tuple.A = x
+			tuple.B = y
+			msg := new(qMsg)
+			msg.a = tuple
+
+			p.send(msg)
 
 		}
 		p.close()
@@ -99,9 +104,11 @@ func ZipGenWith2(f FuncAny2, q1, q2 *Promise) (p *Promise) {
 
 func zipwith(f FuncAny2, in *Promise) (p *Promise) {
 	p = makepromise()
-	for xy := range in.Q() {
-		tuple := xy.(*Tuple2)
-		p.send(f(tuple.A, tuple.B))
+	for xy := range in.q {
+		tuple := xy.a.(*Tuple2)
+		msg := new(qMsg)
+		msg.a = f(tuple.A, tuple.B)
+		p.send(msg)
 	}
 	return
 }

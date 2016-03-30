@@ -2,8 +2,10 @@ package fp
 
 import (
 	"fmt"
-	. "gopkg.in/check.v1"
+	"reflect"
 	"time"
+
+	. "gopkg.in/check.v1"
 )
 
 func (suite *MySuite) TestFuture_x01(c *C) {
@@ -12,14 +14,12 @@ func (suite *MySuite) TestFuture_x01(c *C) {
 		return
 	})
 
-	a, ok := p.Recv()
-	c.Assert(a, Equals, 1)
-	c.Assert(ok, Equals, true)
-
-	a, ok = p.Recv()
-	c.Assert(a, Equals, nil)
-	c.Assert(ok, Equals, false)
-
+	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, 1) {
+			panic("not equal")
+		}
+		return nil, nil
+	}))
 }
 
 func (suite *MySuite) TestFuture_x03(c *C) {
@@ -30,6 +30,7 @@ func (suite *MySuite) TestFuture_x03(c *C) {
 		didCall = true
 		return
 	})
+	Flush(p)
 
 	wasTested := false
 	for i := 0; i < 50; i++ {
@@ -43,15 +44,18 @@ func (suite *MySuite) TestFuture_x03(c *C) {
 	}
 	c.Assert(wasTested, Equals, true)
 	c.Log("adrian guwapo 2")
-	p.Recv()
+
 }
 
 func (suite *MySuite) TestPromise_close(c *C) {
 	p := makepromise()
 	p.close()
 
-	a, ok := p.Recv()
-	c.Assert(a, Equals, nil)
-	c.Assert(ok, Equals, false)
+	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, nil) {
+			panic("not equal")
+		}
+		return nil, nil
+	}))
 
 }

@@ -2,10 +2,10 @@ package fp
 
 //!! not yet tested
 func ProduceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
-	return produceWhile(f, false, predicates...)
+	return produceWhile(f, predicates...)
 }
 
-func produceWhile(f FuncAny0, mute bool, predicates ...FuncBool1) (p *Promise) {
+func produceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	go func() {
 		var a AnyVal
@@ -13,9 +13,12 @@ func produceWhile(f FuncAny0, mute bool, predicates ...FuncBool1) (p *Promise) {
 			a = f()
 			if !are_all_true1(a, predicates...) {
 				break
-			} else if !mute {
-				p.send(a)
 			}
+
+			msg := new(qMsg)
+			msg.a = a
+			p.send(msg)
+
 		}
 		p.close()
 

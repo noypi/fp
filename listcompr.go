@@ -45,8 +45,8 @@ func listComprGen(f FuncAny1, in *Promise, async bool, predicates ...FuncBool1) 
 
 	go func() {
 		var wg WaitGroup
-		for a := range in.Q() {
-			p1 := test_predicates1(f, a, p, async, predicates...)
+		for a := range in.q {
+			p1 := test_predicates1(f, a.a, p, async, predicates...)
 			if async && nil != p1 {
 				wg.Add(p1)
 			}
@@ -72,13 +72,16 @@ func ListComprGenAsync(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Pro
 
 func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, async bool, predicates ...FuncBool1) (p *Promise) {
 	if are_all_true1(a, predicates...) {
-
 		if async {
 			p = Async(func() {
-				outchan.send(f(a))
+				msg := new(qMsg)
+				msg.a = f(a)
+				outchan.send(msg)
 			})
 		} else {
-			outchan.send(f(a))
+			msg := new(qMsg)
+			msg.a = f(a)
+			outchan.send(msg)
 		}
 	}
 
@@ -133,16 +136,20 @@ func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, async bo
 	var tuple *Tuple2
 	var wg WaitGroup
 
-	for data := range promTuple.Q() {
-		tuple = data.(*Tuple2)
+	for data := range promTuple.q {
+		tuple = data.a.(*Tuple2)
 		if are_all_true2(tuple.A, tuple.B, predicates...) {
 			if async {
 				wg.Add(AsyncAnyN(func(n ...AnyVal) AnyVal {
-					outchan.send(f(n[0], n[1]))
+					msg := new(qMsg)
+					msg.a = f(n[0], n[1])
+					outchan.send(msg)
 					return true
 				}, tuple.A, tuple.B))
 			} else {
-				outchan.send(f(tuple.A, tuple.B))
+				msg := new(qMsg)
+				msg.a = f(tuple.A, tuple.B)
+				outchan.send(msg)
 			}
 		}
 	}

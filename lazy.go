@@ -34,11 +34,11 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 	var wg WaitGroup
 	p = makepromise()
 	go func() {
-		for x := range qL.Q() {
+		for x := range qL.q {
 			wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
-				if ret, p.err = f(a); nil == p.err {
-					p.send(ret)
-				}
+				msg := new(qMsg)
+				msg.a, msg.err = f(a)
+				p.send(msg)
 				return
 			}, x))
 		}
@@ -50,26 +50,19 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 }
 
 // !!! not yet tested
-func lazyInParams(f FuncN, qL *Promise, mute bool, n ...AnyVal) (p *Promise) {
+func lazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
 	p = makepromise()
 	go func() {
-		for a := range qL.Q() {
-			var ret AnyVal
-			var err error
+		for a := range qL.q {
+			msg := new(qMsg)
 
 			if 0 < len(n) {
 				params := append([]AnyVal{a}, n...)
-				ret, err = f(params...)
+				msg.a, msg.err = f(params...)
 			} else {
-				ret, err = f(a)
+				msg.a, msg.err = f(a)
 			}
-
-			p.err = err
-			if nil != err {
-				if !mute {
-					p.send(ret)
-				}
-			}
+			p.send(msg)
 		}
 		p.close()
 	}()
@@ -78,30 +71,21 @@ func lazyInParams(f FuncN, qL *Promise, mute bool, n ...AnyVal) (p *Promise) {
 }
 
 func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
-	return lazyInParams(f, qL, false, n...)
-}
-
-func LazyInParamsMute(f FuncVoidN, qL *Promise, n ...AnyVal) (p *Promise) {
-	return lazyInParams(func(n ...AnyVal) (AnyVal, error) {
-		f(n...)
-		return nil, nil
-	}, qL, true, n...)
+	return lazyInParams(f, qL, n...)
 }
 
 // !!! not yet tested
-func lazyIn2(f Func2, qL1, qL2 *Promise, mute bool) (p *Promise) {
+func lazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
 	p = makepromise()
 	go func() {
 		q := ZipGen2(qL1, qL2)
-		for a := range q.Q() {
-			tuple := a.(*Tuple2)
+		for a := range q.q {
+			msg := new(qMsg)
+			tuple := a.a.(*Tuple2)
 			ret, err := f(tuple.A, tuple.B)
-			p.err = err
-			if nil == p.err {
-				if !mute {
-					p.send(ret)
-				}
-			}
+			msg.a = ret
+			msg.err = err
+			p.send(msg)
 		}
 		p.close()
 	}()
@@ -110,9 +94,5 @@ func lazyIn2(f Func2, qL1, qL2 *Promise, mute bool) (p *Promise) {
 }
 
 func LazyIn2(f Func2, qL1, qL2 *Promise) (p *Promise) {
-	return lazyIn2(f, qL1, qL2, false)
-}
-
-func LazyInMute2(f Func2, qL1, qL2 *Promise) (p *Promise) {
-	return lazyIn2(f, qL1, qL2, true)
+	return lazyIn2(f, qL1, qL2)
 }

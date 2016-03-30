@@ -2,6 +2,9 @@ package fp
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -9,19 +12,26 @@ func (suite *MySuite) TestRangeList(c *C) {
 	list := []int{1, 2, 3, 4, 5}
 
 	p := RangeList(func(a, i AnyVal) (ret AnyVal, err error) {
-		c.Log("i=", i)
+		fmt.Println("a=", a)
 		ret = a.(int) * 3
 		return
-	}, list)
+	}, list, 3)
 
-	for {
-		if i, ok := p.Recv(); ok {
-			c.Log(i.(int))
-		} else {
-			break
-		}
-
+	res := []AnyVal{
+		3, 6, 9, 12, 15,
 	}
+	i := 0
+	q3 := p.Then(func(a AnyVal) (AnyVal, error) {
+		fmt.Println("test rangelist a=", a, ", res[i]=", res[i])
+		if !reflect.DeepEqual(a, res[i]) {
+			panic("not equal")
+		}
+		i++
+		return "resolved", nil
+	})
+
+	Flush(q3)
+
 }
 
 func (suite *MySuite) TestRangeDict(c *C) {
@@ -32,25 +42,40 @@ func (suite *MySuite) TestRangeDict(c *C) {
 	}
 
 	p := RangeDict(func(v, k AnyVal) (ret AnyVal, err error) {
-		c.Logf("v=%v, k=%v", v, k)
+		fmt.Println("TestRangeDict v=%v, k=%v", v, k)
 		ret = v
 		if v.(int) != 4 {
-			err = errors.New("some error")
+			err = errors.New(k.(string))
 		}
 		return
 	}, list)
 
 	hasItem := false
-	for {
-		if i, ok := p.Recv(); ok {
-			hasItem = true
-			c.Assert(i.(int) == 4, Equals, true)
-		} else {
-			break
+	hasPapa := false
+	hasMama := false
+
+	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+		fmt.Println("TestRangeDict Then resolved a=", a)
+		hasItem = true
+		if !reflect.DeepEqual(a, 4) {
+			panic("not equal")
 		}
-	}
+		return nil, nil
+	}, func(a AnyVal) (AnyVal, error) {
+		fmt.Println("TestRangeDict Then failed a=", a)
+		if a.(error).Error() == "mama" {
+			hasMama = true
+		} else if a.(error).Error() == "papa" {
+			hasPapa = true
+		}
+
+		return nil, nil
+
+	}))
 
 	c.Assert(hasItem, Equals, true)
+	c.Assert(hasMama, Equals, true)
+	c.Assert(hasPapa, Equals, true)
 }
 
 func (suite *MySuite) Disable_TestParallelLoop(c *C) {
@@ -72,10 +97,13 @@ func (suite *MySuite) Disable_TestParallelLoop(c *C) {
 		{106, true},
 		{nil, false},
 	}
-	for _, vv := range res {
-		v, ok := q.Recv()
-		c.Assert(v, Equals, vv.v)
-		c.Assert(ok, Equals, vv.ok)
-	}
+	i := 0
+	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, res[i].v) {
+			panic("not equal")
+		}
+		i++
+		return nil, nil
+	}))
 
 }

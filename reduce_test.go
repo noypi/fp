@@ -1,6 +1,8 @@
 package fp
 
 import (
+	"reflect"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -10,7 +12,16 @@ func (suite *MySuite) TestReduceParams(c *C) {
 	}
 
 	res := ReduceParams(add, []int{1, 2, 3, 4, 5, 6, 7, 8, 9})
-	c.Assert(<-res.Q(), Equals, 45)
+
+	bCalled := false
+	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, 45) {
+			panic("not equal")
+		}
+		bCalled = true
+		return nil, nil
+	}))
+	c.Assert(bCalled, Equals, true)
 
 }
 
@@ -26,7 +37,15 @@ func (suite *MySuite) TestReduceFuncs(c *C) {
 	}
 
 	res := ReduceFuncs(3, []func(int) int{double, triple, add5})
-	c.Assert(<-res.Q(), Equals, 23)
+	bCalled := false
+	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, 23) {
+			panic("not equal")
+		}
+		bCalled = true
+		return nil, nil
+	}))
+	c.Assert(bCalled, Equals, true)
 
 }
 
@@ -36,6 +55,18 @@ func (suite *MySuite) TestReduceFuncsErr(c *C) {
 	}
 
 	res := ReduceFuncs(3, []func(int, int) int{double})
-	c.Assert(<-res.Q(), IsNil)
-	c.Assert(res.Error(), NotNil)
+
+	bCalledResolved := false
+	bCalledFailed := false
+	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+		bCalledResolved = true
+		return nil, nil
+	}, func(a AnyVal) (AnyVal, error) {
+		bCalledFailed = true
+		return nil, nil
+	}))
+
+	c.Assert(bCalledResolved, Equals, false)
+	c.Assert(bCalledFailed, Equals, true)
+
 }

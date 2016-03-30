@@ -4,59 +4,53 @@ import (
 	"reflect"
 )
 
-// if ok is false, the promise is closed without receiving any.
-func (this Promise) Recv() (a AnyVal, ok bool) {
-	av, ok := this.vq.Recv()
-	a = av.Interface()
-	return
-}
-
 func (this Promise) IsEmpty() bool {
 	return 0 == len(this.q)
 }
 
 func (this *Promise) close() {
 	this.m.Lock()
-	defer this.m.Unlock()
 	close(this.q)
 	this.closed = true
+	this.m.Unlock()
 }
 
 func (this *Promise) Then(fns ...Func1) (p *Promise) {
-	return Future(func() (AnyVal, error) {
-		res := <-this.q
-		if this.HasError() {
-			if 1 < len(fns) {
-				return fns[1](this.Error())
+	p = makepromise()
+	go func() {
+		var res2 AnyVal
+		var err2 error
+		for res := range this.q {
+			if nil != res.err {
+				if 1 < len(fns) {
+					res2, err2 = fns[1](res.err)
+				}
+			} else {
+				if 0 < len(fns) {
+					res2, err2 = fns[0](res.a)
+				}
 			}
-		} else {
-			if 0 < len(fns) {
-				return fns[0](res)
-			}
+
+			msg := new(qMsg)
+			msg.a = res2
+			msg.err = err2
+			p.send(msg)
 		}
-		return nil, nil
-	})
+		p.close()
+	}()
+
+	return
 }
 
-func (this *Promise) Q() ChanAny {
-	return this.q
-}
-
-func (this *Promise) send(a AnyVal) {
+func (this *Promise) send(a *qMsg) {
 	this.q <- a
-}
-
-func (this Promise) HasError() bool {
-	return nil != this.err
-}
-
-func (this Promise) Error() error {
-	return this.err
 }
 
 func Fcall(v AnyVal) *Promise {
 	p := makepromise()
-	p.q <- v
+	msg := new(qMsg)
+	msg.a = v
+	p.send(msg)
 	close(p.q)
 	return p
 }
@@ -67,9 +61,9 @@ func makepromise(chanlen ...int) (p *Promise) {
 		if 0 == chanlen[0] {
 			panic("does not support chanlen=0. could break promise.")
 		}
-		p.q = make(ChanAny, chanlen[0])
+		p.q = make(qChan, chanlen[0])
 	} else {
-		p.q = make(ChanAny, 1)
+		p.q = make(qChan, 1)
 	}
 	p.vq = reflect.ValueOf(p.q)
 	return

@@ -1,8 +1,9 @@
 package fp
 
 import (
-	. "gopkg.in/check.v1"
 	"time"
+
+	. "gopkg.in/check.v1"
 )
 
 func (suite *MySuite) TestWaitGroup(c *C) {
@@ -14,7 +15,7 @@ func (suite *MySuite) TestWaitGroup(c *C) {
 
 	go func() {
 		time.Sleep(300 * time.Millisecond)
-		ch.send(12)
+		ch.send(&qMsg{a: 12})
 		ch.close()
 	}()
 
@@ -23,7 +24,7 @@ func (suite *MySuite) TestWaitGroup(c *C) {
 
 	go func() {
 		time.Sleep(300 * time.Millisecond)
-		ch1.send(12)
+		ch1.send(&qMsg{a: 12})
 		ch1.close()
 	}()
 
@@ -37,7 +38,7 @@ func (suite *MySuite) TestWaitGroup1(c *C) {
 
 	go func() {
 		time.Sleep(300 * time.Millisecond)
-		ch.send(12)
+		ch.send(&qMsg{a: 12})
 		ch.close()
 	}()
 
@@ -46,7 +47,7 @@ func (suite *MySuite) TestWaitGroup1(c *C) {
 
 	go func() {
 		time.Sleep(300 * time.Millisecond)
-		ch.send(12)
+		ch.send(&qMsg{a: 12})
 		ch.close()
 	}()
 

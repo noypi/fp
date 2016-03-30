@@ -8,18 +8,18 @@ const cDefaultCapacity = 4
 
 // a channel that can grow in size when needed
 type VectorChan struct {
-	q      *Promise
+	q      chan AnyVal
 	mutex  sync.Mutex
 	closed bool
 }
 
 func NewVectorChan(capacity int) *VectorChan {
 	v := new(VectorChan)
-	v.q = makepromise(capacity)
+	v.q = make(chan AnyVal, capacity)
 	return v
 }
 
-func (this *VectorChan) Add(in ...*Promise) {
+func (this *VectorChan) Add(in ...AnyVal) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -41,7 +41,7 @@ func (this *VectorChan) Send(as ...AnyVal) {
 func (this *VectorChan) Close() {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
-	this.q.close()
+	close(this.q)
 	this.closed = true
 }
 
@@ -51,40 +51,36 @@ func (this *VectorChan) send(x AnyVal) {
 	}
 
 	if nil == this.q {
-		this.q = makepromise(cDefaultCapacity)
+		this.q = make(chan AnyVal, cDefaultCapacity)
 	}
 
-	if 0 == (cap(this.q.q) - len(this.q.q)) {
-		q1 := makepromise(cap(this.q.q) << 1)
-		close(this.q.q)
+	if 0 == (cap(this.q) - len(this.q)) {
+		q1 := make(chan AnyVal, cap(this.q)<<1)
+		close(this.q)
 
-		for a := range this.q.q {
-			q1.send(a)
+		for a := range this.q {
+			q1 <- a
 		}
 
 		this.q = q1
 	}
 
-	this.q.send(x)
-}
-
-func (this *VectorChan) Recv() (a AnyVal, ok bool) {
-	return this.getchan().Recv()
+	this.q <- x
 }
 
 func (this VectorChan) Len() int {
-	return len(this.getchan().q)
+	return len(this.getchan())
 }
 
 func (this VectorChan) Cap() int {
-	return cap(this.getchan().q)
+	return cap(this.getchan())
 }
 
-func (this *VectorChan) getchan() *Promise {
+func (this *VectorChan) getchan() chan AnyVal {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 	if nil == this.q {
-		this.q = makepromise(cDefaultCapacity)
+		this.q = make(chan AnyVal, cDefaultCapacity)
 	}
 	// can still attempt to read after close, but not send on it
 	return this.q

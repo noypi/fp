@@ -1,6 +1,8 @@
 package fp
 
 import (
+	"reflect"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -14,21 +16,22 @@ func (suite *MySuite) TestListCompr(c *C) {
 		return 0 == (a.(int) % 2)
 	})
 
-	type _res struct {
-		v  AnyVal
-		ok bool
+	res := []AnyVal{
+		6,
+		12,
+		18,
+		nil,
 	}
-	res := []_res{
-		{6, true},
-		{12, true},
-		{18, true},
-		{nil, false},
-	}
-	for _, vv := range res {
-		v, ok := q.Recv()
-		c.Assert(v, Equals, vv.v)
-		c.Assert(ok, Equals, vv.ok)
-	}
+
+	i := 0
+	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, res[i]) {
+			panic("not equal")
+		}
+		i++
+		return nil, nil
+	}))
+
 }
 
 func (suite *MySuite) TestListCompr2(c *C) {
@@ -53,9 +56,12 @@ func (suite *MySuite) TestListCompr2(c *C) {
 		{13, true},
 		{nil, false},
 	}
-	for _, vv := range res {
-		v, ok := q.Recv()
-		c.Assert(v, Equals, vv.v)
-		c.Assert(ok, Equals, vv.ok)
-	}
+	i := 0
+	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+		if !reflect.DeepEqual(a, res[i].v) {
+			panic("not equal")
+		}
+		i++
+		return nil, nil
+	}))
 }

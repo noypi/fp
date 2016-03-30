@@ -35,39 +35,59 @@ func ParallelLoop(af Func2, bf Func1, aListOrMap AnyVal, chanlen ...int) (p *Pro
 	return
 
 }
-
 func RangeList(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
+	return rangeList(f, list, false, chanlen...)
+}
+
+func RangeListAsync(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
+	return rangeList(f, list, true, chanlen...)
+}
+
+func rangeList(f Func2, list AnyVal, async bool, chanlen ...int) (p *Promise) {
 	v, ok := list.(reflect.Value)
 	if !ok {
 		v = reflect.ValueOf(list)
 	}
 
 	n := v.Len()
-	p = makepromise(chanlen...)
-	qtmp := make(chan bool, cap(p.Q()))
-
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
 	wg.Add(n)
-	for i := 0; i < n; i++ {
-		go func(index int, ch *Promise) {
-			qtmp <- true
-			ret, err := f(v.Index(index).Interface(), index)
-			p.err = err
-			if nil == err {
-				ch.send(ret)
-			}
-			wg.Done()
-			<-qtmp
-		}(i, p)
+	fnexec := func(index int, ch *Promise) {
+		ret, err := f(v.Index(index).Interface(), index)
+		msg := new(qMsg)
+		msg.a = ret
+		msg.err = err
+		ch.send(msg)
+		wg.Done()
 	}
 
-	go func() { wg.Wait(); close(qtmp); p.close() }()
+	p = makepromise(chanlen...)
+	go func() {
+		for i := 0; i < n; i++ {
+			if async {
+				fnexec(i, p)
+			} else {
+				fnexec(i, p)
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		p.close()
+	}()
 
 	return p
 }
 
 // calls Func2 as func(value, key)
 func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
+	return rangeDict(f, dict, false, chanlen...)
+}
+func RangeDictAsync(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
+	return rangeDict(f, dict, true, chanlen...)
+}
+func rangeDict(f Func2, dict AnyVal, async bool, chanlen ...int) (p *Promise) {
 	v, ok := dict.(reflect.Value)
 	if !ok {
 		v = reflect.ValueOf(dict)
@@ -75,21 +95,27 @@ func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
 
 	n := v.Len()
 	p = makepromise(chanlen...)
-	qtmp := make(chan bool, cap(p.Q()))
-	wg := new(sync.WaitGroup)
+	var wg sync.WaitGroup
 	wg.Add(n)
-	for _, vk := range v.MapKeys() {
-		go func(vk reflect.Value, ch *Promise) {
-			qtmp <- true
-			ret, err := f(v.MapIndex(vk).Interface(), vk.Interface())
-			ch.err = err
-			if nil == ch.err {
-				ch.send(ret)
-			}
-			wg.Done()
-			<-qtmp
-		}(vk, p)
+
+	fnexec := func(vk reflect.Value, ch *Promise) {
+		ret, err := f(v.MapIndex(vk).Interface(), vk.Interface())
+		msg := new(qMsg)
+		msg.a = ret
+		msg.err = err
+		ch.send(msg)
+		wg.Done()
 	}
+
+	go func() {
+		for _, vk := range v.MapKeys() {
+			if async {
+				go fnexec(vk, p)
+			} else {
+				fnexec(vk, p)
+			}
+		}
+	}()
 
 	go func() { wg.Wait(); p.close() }()
 
