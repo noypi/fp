@@ -1,11 +1,7 @@
 package fp
 
 //!! not yet tested
-func ProduceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
-	return produceWhile(f, predicates...)
-}
-
-func produceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
+func ProduceWhileFn(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	go func() {
 		var a AnyVal
