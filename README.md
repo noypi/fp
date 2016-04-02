@@ -65,10 +65,7 @@
 		return
 	}, qLazy)
 
-	// print results
-	for a := range q1.Q() {
-		log.Printf("ret=%d\n", a)
-	}
+
 ```
 
 See examples for more.
