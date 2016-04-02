@@ -8,6 +8,10 @@ func (this Promise) IsEmpty() bool {
 	return 0 == len(this.q)
 }
 
+func (this *Promise) SetContinueOnError() {
+	panic("soon")
+}
+
 func (this *Promise) close() {
 	this.m.Lock()
 	close(this.q)
