@@ -3,9 +3,6 @@
 
 ### Golang promise, futures, lazy, list comprehension...etc...
 
-### Other similar projects
-- github.com/fanliao/go-promise
-
 #### Examples
 
 ##### implementing q
@@ -81,3 +78,7 @@ See examples for more.
 ### shoutout
 
 Thanks minux for reviewing... =)
+
+#### Other similar projects
+- github.com/fanliao/go-promise
+
