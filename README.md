@@ -52,7 +52,7 @@
 ```go
 	as := []int{26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2}
 	// range will concurrently execute each
-	qLazy := Range(func(a, i AnyVal) (ret AnyVal, skip bool) {
+	qLazy := Range(func(a, i AnyVal) (ret AnyVal, err error) {
 		ret = &Tuple2{
 			A: a,
 			B: i,
@@ -60,7 +60,7 @@
 		return
 	}, as)
 
-	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, skip bool) {
+	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, err error) {
 		ret = fb(x.(*Tuple2).A.(int))
 		return
 	}, qLazy)
