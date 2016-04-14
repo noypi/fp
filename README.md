@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/noypi/fp.svg?branch=master)](https://travis-ci.org/noypi/fp)
 [![GoDoc](https://godoc.org/github.com/noypi/fp?status.png)](http://godoc.org/github.com/noypi/fp)
+[![codebeat badge](https://codebeat.co/badges/a7fbc443-04aa-47c9-8b78-20b1395a9dc1)](https://codebeat.co/projects/github-com-noypi-fp)
 
 ### Golang promise, futures, lazy, list comprehension...etc...
 
