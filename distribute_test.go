@@ -1,32 +1,29 @@
 package fp
 
 import (
-	"fmt"
 	. "gopkg.in/check.v1"
 	"runtime"
+	"sync/atomic"
 )
 
 func (suite *MySuite) TestDistributeWork(c *C) {
 	src := make(chan interface{}, 100)
 	go func() {
-		for i := 0; i < 100; i++ {
+		for i := 1; i <= 100; i++ {
 			src <- i
 		}
 		close(src)
 	}()
 
+	var total int32
 	work := func(a interface{}) (out interface{}, err error) {
-		out = a.(int) * 10
+		atomic.AddInt32(&total, int32(a.(int)))
 		return
 	}
 
 	q := DistributeWorkCh(src, work, uint(runtime.NumCPU()))
 
-	q.Then(func(a interface{}) (out interface{}, err error) {
-		fmt.Println(a)
-		return
-	})
-
 	// wait
 	Flush(q)
+	c.Assert(total, Equals, 5050)
 }

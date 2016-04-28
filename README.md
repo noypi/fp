@@ -31,18 +31,22 @@
 ```go
 	src := make(chan interface{}, 100)
 	go func() {
-		for i := 0; i < 100; i++ {
+		for i := 1; i <= 100; i++ {
 			src <- i
 		}
 		close(src)
 	}()
 
+	var total int32
 	work := func(a interface{}) (out interface{}, err error) {
-		out = a.(int) * 10
+		atomic.AddInt32(&total, int32(a.(int)))
 		return
 	}
 
 	q := DistributeWorkCh(src, work, uint(runtime.NumCPU()))
+
+	// wait
+	Flush(q)
 ```
 
 ##### example of implementing a resource using LazyN

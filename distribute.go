@@ -16,12 +16,12 @@ func DistributeWorkCh(src chan interface{}, worker func(interface{}) (interface{
 		var i uint
 		for a := range src {
 			wg.Add(1)
-			go func() {
+			go func(a1 interface{}) {
 				var msg = new(qMsg)
-				msg.a, msg.err = worker(a)
+				msg.a, msg.err = worker(a1)
 				q.q <- msg
 				wg.Done()
-			}()
+			}(a)
 			i++
 			if 0 >= (nProcessor - i) {
 				wg.Wait()
