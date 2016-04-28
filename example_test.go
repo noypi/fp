@@ -26,11 +26,11 @@ func ExampleLazyN() {
 			return
 		}
 
-		func (this Resource) Get(n ...AnyVal) (p *Promise) {
+		func (this Resource) Get(n ...interface{}) (p *Promise) {
 			return r.fget(n...)
 		}
 
-		func (this Resource) Put(n ...AnyVal) (p *Promise) {
+		func (this Resource) Put(n ...interface{}) (p *Promise) {
 			return r.fput(n...)
 		}
 	*/
@@ -39,15 +39,15 @@ func ExampleLazyN() {
 
 func ExampleQ() {
 
-	q := Future(func() (AnyVal, error) {
+	q := Future(func() (interface{}, error) {
 		// do some work
 		return "resolved", errors.New("failed")
 	})
 
-	q = q.Then(func(a AnyVal) (AnyVal, error) {
+	q = q.Then(func(a interface{}) (interface{}, error) {
 		// on resolved
 		return "resolved", errors.New("failed")
-	}, func(a AnyVal) (AnyVal, error) {
+	}, func(a interface{}) (interface{}, error) {
 		// on error
 		return "resolved", errors.New("failed")
 	})
@@ -64,7 +64,7 @@ func ExampleRangeList() {
 		inputs = append(inputs, 15+int(rand.Int31n(15)))
 	}
 
-	q := RangeList(func(x, index AnyVal) (ret AnyVal, err error) {
+	q := RangeList(func(x, index interface{}) (ret interface{}, err error) {
 		// assign result to be sent to promise
 		ret = expensive_run_with_res(x.(int))
 		// ignore some elements
@@ -76,7 +76,7 @@ func ExampleRangeList() {
 	}, inputs)
 
 	var wg WaitGroup
-	wg.Add(q.Then(func(a AnyVal) (AnyVal, error) {
+	wg.Add(q.Then(func(a interface{}) (interface{}, error) {
 		log.Printf("ret=%d\n", a)
 		return "resolved", nil
 	}))
@@ -86,14 +86,14 @@ func ExampleRangeList() {
 func ExampleListCompr() {
 	list := []int{1, 2, 3, 4, 5, 6}
 
-	q := ListCompr(func(a AnyVal) (ret AnyVal) {
+	q := ListCompr(func(a interface{}) (ret interface{}) {
 		return a.(int) * 3
-	}, list, func(a AnyVal) bool {
+	}, list, func(a interface{}) bool {
 		return 0 == (a.(int) % 2)
 	})
 
 	// receive inputs
-	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(q.Then(func(a interface{}) (interface{}, error) {
 		log.Println("result a=", a)
 		return "resolved", nil
 	}))
@@ -104,14 +104,14 @@ func ExampleListCompr2() {
 	alist := []int{1, 2, 3, 4, 5, 6}
 	blist := []int{2, 3, 4, 5, 6, 7}
 
-	q := ListCompr2(func(a, b AnyVal) (ret AnyVal) {
+	q := ListCompr2(func(a, b interface{}) (ret interface{}) {
 		return a.(int) + b.(int)
-	}, alist, blist, func(a, b AnyVal) bool {
+	}, alist, blist, func(a, b interface{}) bool {
 		return 0 == (a.(int) % 2)
 	})
 
 	// receive inputs
-	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(q.Then(func(a interface{}) (interface{}, error) {
 		log.Println("result a=", a)
 		return "resolved", nil
 	}))
@@ -143,7 +143,7 @@ func ExampleWaitGroup() {
 }
 
 func ExampleFuture() {
-	p := Future(func() (ret AnyVal, err error) {
+	p := Future(func() (ret interface{}, err error) {
 		// do something...
 		ret = 1 // some value
 
@@ -153,7 +153,7 @@ func ExampleFuture() {
 		return
 	})
 
-	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(p.Then(func(a interface{}) (interface{}, error) {
 		log.Println("result a=", a)
 		return "resolved", nil
 	}))

@@ -10,7 +10,7 @@ func Async(f FuncVoid0) (p *Promise) {
 	return
 }
 
-func Async1(f FuncAny1, param AnyVal) (p *Promise) {
+func Async1(f FuncAny1, param interface{}) (p *Promise) {
 	p = makepromise()
 	go func() {
 		msg := new(qMsg)
@@ -21,7 +21,7 @@ func Async1(f FuncAny1, param AnyVal) (p *Promise) {
 	return
 }
 
-func AsyncAnyN(f FuncAnyN, param ...AnyVal) (p *Promise) {
+func AsyncAnyN(f FuncAnyN, param ...interface{}) (p *Promise) {
 	p = makepromise()
 	go func() {
 		msg := new(qMsg)

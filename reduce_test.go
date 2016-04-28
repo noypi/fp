@@ -14,7 +14,7 @@ func (suite *MySuite) TestReduceParams(c *C) {
 	res := ReduceParams(add, []int{1, 2, 3, 4, 5, 6, 7, 8, 9})
 
 	bCalled := false
-	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(res.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, 45) {
 			panic("not equal")
 		}
@@ -38,7 +38,7 @@ func (suite *MySuite) TestReduceFuncs(c *C) {
 
 	res := ReduceFuncs(3, []func(int) int{double, triple, add5})
 	bCalled := false
-	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(res.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, 23) {
 			panic("not equal")
 		}
@@ -58,10 +58,10 @@ func (suite *MySuite) TestReduceFuncsErr(c *C) {
 
 	bCalledResolved := false
 	bCalledFailed := false
-	Flush(res.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(res.Then(func(a interface{}) (interface{}, error) {
 		bCalledResolved = true
 		return nil, nil
-	}, func(a AnyVal) (AnyVal, error) {
+	}, func(a interface{}) (interface{}, error) {
 		bCalledFailed = true
 		return nil, nil
 	}))

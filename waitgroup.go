@@ -7,7 +7,7 @@ type WaitGroup struct {
 // sets initial capacity
 func NewWaitGroup(capacity int) *WaitGroup {
 	wg := new(WaitGroup)
-	wg.v.q = make(chan AnyVal, capacity)
+	wg.v.q = make(chan interface{}, capacity)
 	return wg
 }
 
@@ -49,7 +49,7 @@ func Flush(p *Promise) {
 	}
 }
 
-func flushchan(a AnyVal) {
+func flushchan(a interface{}) {
 	if c, b := a.(*Promise); b {
 		Flush(c)
 	}

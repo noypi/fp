@@ -37,7 +37,7 @@ func (suite *MySuite) TestVectorChan(c *C) {
 	c.Assert(v.Cap(), Equals, 16)
 
 	// var params
-	qs := []AnyVal{}
+	qs := []interface{}{}
 	for i := 0; i < 9; i++ {
 		qs = append(qs, makepromise())
 	}

@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-func DistributeWork(src *Promise, worker func(AnyVal) (AnyVal, error), nProcessor uint) (q *Promise) {
+func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error), nProcessor uint) (q *Promise) {
 	q = makepromise()
 	go func() {
 		var wg sync.WaitGroup

@@ -6,7 +6,7 @@ import (
 
 //!!! not tested
 // list comprehension
-func listCompr(f FuncAny1, alist AnyVal, async bool, predicates ...FuncBool1) (p *Promise) {
+func listCompr(f FuncAny1, alist interface{}, async bool, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	va := reflect.ValueOf(alist)
 
@@ -30,11 +30,11 @@ func listCompr(f FuncAny1, alist AnyVal, async bool, predicates ...FuncBool1) (p
 
 }
 
-func ListCompr(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+func ListCompr(f FuncAny1, alist interface{}, predicates ...FuncBool1) (p *Promise) {
 	return listCompr(f, alist, false, predicates...)
 }
 
-func ListComprAsync(f FuncAny1, alist AnyVal, predicates ...FuncBool1) (p *Promise) {
+func ListComprAsync(f FuncAny1, alist interface{}, predicates ...FuncBool1) (p *Promise) {
 	return listCompr(f, alist, true, predicates...)
 }
 
@@ -70,7 +70,7 @@ func ListComprGenAsync(f FuncAny1, in *Promise, predicates ...FuncBool1) (p *Pro
 	return listComprGen(f, in, true, predicates...)
 }
 
-func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, async bool, predicates ...FuncBool1) (p *Promise) {
+func test_predicates1(f FuncAny1, a interface{}, outchan *Promise, async bool, predicates ...FuncBool1) (p *Promise) {
 	if are_all_true1(a, predicates...) {
 		if async {
 			p = Async(func() {
@@ -90,7 +90,7 @@ func test_predicates1(f FuncAny1, a AnyVal, outchan *Promise, async bool, predic
 
 //!!! not tested
 // list comprehension, 2 lists
-func listCompr2(f FuncAny2, alist, blist AnyVal, async bool, predicates ...FuncBool2) (p *Promise) {
+func listCompr2(f FuncAny2, alist, blist interface{}, async bool, predicates ...FuncBool2) (p *Promise) {
 
 	p = makepromise()
 	go func() {
@@ -103,11 +103,11 @@ func listCompr2(f FuncAny2, alist, blist AnyVal, async bool, predicates ...FuncB
 
 }
 
-func ListCompr2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
+func ListCompr2(f FuncAny2, alist, blist interface{}, predicates ...FuncBool2) (p *Promise) {
 	return listCompr2(f, alist, blist, false, predicates...)
 }
 
-func ListComprAsync2(f FuncAny2, alist, blist AnyVal, predicates ...FuncBool2) (p *Promise) {
+func ListComprAsync2(f FuncAny2, alist, blist interface{}, predicates ...FuncBool2) (p *Promise) {
 	return listCompr2(f, alist, blist, true, predicates...)
 }
 
@@ -140,7 +140,7 @@ func test_predicates2(f FuncAny2, promTuple *Promise, outchan *Promise, async bo
 		tuple = data.a.(*Tuple2)
 		if are_all_true2(tuple.A, tuple.B, predicates...) {
 			if async {
-				wg.Add(AsyncAnyN(func(n ...AnyVal) AnyVal {
+				wg.Add(AsyncAnyN(func(n ...interface{}) interface{} {
 					msg := new(qMsg)
 					msg.a = f(n[0], n[1])
 					outchan.send(msg)

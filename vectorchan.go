@@ -8,18 +8,18 @@ const cDefaultCapacity = 4
 
 // a channel that can grow in size when needed
 type VectorChan struct {
-	q      chan AnyVal
+	q      chan interface{}
 	mutex  sync.Mutex
 	closed bool
 }
 
 func NewVectorChan(capacity int) *VectorChan {
 	v := new(VectorChan)
-	v.q = make(chan AnyVal, capacity)
+	v.q = make(chan interface{}, capacity)
 	return v
 }
 
-func (this *VectorChan) Add(in ...AnyVal) {
+func (this *VectorChan) Add(in ...interface{}) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -29,7 +29,7 @@ func (this *VectorChan) Add(in ...AnyVal) {
 
 }
 
-func (this *VectorChan) Send(as ...AnyVal) {
+func (this *VectorChan) Send(as ...interface{}) {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -45,17 +45,17 @@ func (this *VectorChan) Close() {
 	this.closed = true
 }
 
-func (this *VectorChan) send(x AnyVal) {
+func (this *VectorChan) send(x interface{}) {
 	if this.closed {
 		panic("VectorChan already closed")
 	}
 
 	if nil == this.q {
-		this.q = make(chan AnyVal, cDefaultCapacity)
+		this.q = make(chan interface{}, cDefaultCapacity)
 	}
 
 	if 0 == (cap(this.q) - len(this.q)) {
-		q1 := make(chan AnyVal, cap(this.q)<<1)
+		q1 := make(chan interface{}, cap(this.q)<<1)
 		close(this.q)
 
 		for a := range this.q {
@@ -76,11 +76,11 @@ func (this VectorChan) Cap() int {
 	return cap(this.getchan())
 }
 
-func (this *VectorChan) getchan() chan AnyVal {
+func (this *VectorChan) getchan() chan interface{} {
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 	if nil == this.q {
-		this.q = make(chan AnyVal, cDefaultCapacity)
+		this.q = make(chan interface{}, cDefaultCapacity)
 	}
 	// can still attempt to read after close, but not send on it
 	return this.q

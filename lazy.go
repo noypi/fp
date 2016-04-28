@@ -3,7 +3,7 @@ package fp
 // !!! not yet tested
 func Lazy(f FuncAny0) LazyFn {
 	return func() *Promise {
-		return Future(func() (AnyVal, error) {
+		return Future(func() (interface{}, error) {
 			return f(), nil
 		})
 	}
@@ -11,8 +11,8 @@ func Lazy(f FuncAny0) LazyFn {
 
 // !!! not yet tested
 func Lazy1(f FuncAny1) LazyFn1 {
-	return func(a AnyVal) *Promise {
-		return Future(func() (AnyVal, error) {
+	return func(a interface{}) *Promise {
+		return Future(func() (interface{}, error) {
 			return f(a), nil
 		})
 	}
@@ -20,8 +20,8 @@ func Lazy1(f FuncAny1) LazyFn1 {
 
 // !!! not yet tested
 func LazyN(f FuncAnyN) LazyFnN {
-	return func(a ...AnyVal) *Promise {
-		return Future(func() (AnyVal, error) {
+	return func(a ...interface{}) *Promise {
+		return Future(func() (interface{}, error) {
 			return f(a...), nil
 		})
 	}
@@ -35,7 +35,7 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 	p = makepromise()
 	go func() {
 		for x := range qL.q {
-			wg.Add(Async1(func(a AnyVal) (ret AnyVal) {
+			wg.Add(Async1(func(a interface{}) (ret interface{}) {
 				msg := new(qMsg)
 				msg.a, msg.err = f(a)
 				p.send(msg)
@@ -50,14 +50,14 @@ func LazyInAsync1(f Func1, qL *Promise, chanlen ...int) (p *Promise) {
 }
 
 // !!! not yet tested
-func lazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
+func lazyInParams(f FuncN, qL *Promise, n ...interface{}) (p *Promise) {
 	p = makepromise()
 	go func() {
 		for a := range qL.q {
 			msg := new(qMsg)
 
 			if 0 < len(n) {
-				params := append([]AnyVal{a}, n...)
+				params := append([]interface{}{a}, n...)
 				msg.a, msg.err = f(params...)
 			} else {
 				msg.a, msg.err = f(a)
@@ -70,7 +70,7 @@ func lazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
 	return
 }
 
-func LazyInParams(f FuncN, qL *Promise, n ...AnyVal) (p *Promise) {
+func LazyInParams(f FuncN, qL *Promise, n ...interface{}) (p *Promise) {
 	return lazyInParams(f, qL, n...)
 }
 

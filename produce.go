@@ -9,7 +9,7 @@ func ProduceWhileFn(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
 func produceWhile(f FuncAny0, predicates ...FuncBool1) (p *Promise) {
 	p = makepromise()
 	go func() {
-		var a AnyVal
+		var a interface{}
 		for {
 			a = f()
 			if !are_all_true1(a, predicates...) {

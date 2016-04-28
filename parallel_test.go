@@ -11,17 +11,17 @@ import (
 func (suite *MySuite) TestRangeList(c *C) {
 	list := []int{1, 2, 3, 4, 5}
 
-	p := RangeList(func(a, i AnyVal) (ret AnyVal, err error) {
+	p := RangeList(func(a, i interface{}) (ret interface{}, err error) {
 		fmt.Println("a=", a)
 		ret = a.(int) * 3
 		return
 	}, list, 3)
 
-	res := []AnyVal{
+	res := []interface{}{
 		3, 6, 9, 12, 15,
 	}
 	i := 0
-	q3 := p.Then(func(a AnyVal) (AnyVal, error) {
+	q3 := p.Then(func(a interface{}) (interface{}, error) {
 		fmt.Println("test rangelist a=", a, ", res[i]=", res[i])
 		if !reflect.DeepEqual(a, res[i]) {
 			panic("not equal")
@@ -41,7 +41,7 @@ func (suite *MySuite) TestRangeDict(c *C) {
 		"papa":  31,
 	}
 
-	p := RangeDict(func(v, k AnyVal) (ret AnyVal, err error) {
+	p := RangeDict(func(v, k interface{}) (ret interface{}, err error) {
 		fmt.Println("TestRangeDict v=%v, k=%v", v, k)
 		ret = v
 		if v.(int) != 4 {
@@ -54,14 +54,14 @@ func (suite *MySuite) TestRangeDict(c *C) {
 	hasPapa := false
 	hasMama := false
 
-	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(p.Then(func(a interface{}) (interface{}, error) {
 		fmt.Println("TestRangeDict Then resolved a=", a)
 		hasItem = true
 		if !reflect.DeepEqual(a, 4) {
 			panic("not equal")
 		}
 		return nil, nil
-	}, func(a AnyVal) (AnyVal, error) {
+	}, func(a interface{}) (interface{}, error) {
 		fmt.Println("TestRangeDict Then failed a=", a)
 		if a.(error).Error() == "mama" {
 			hasMama = true
@@ -79,16 +79,16 @@ func (suite *MySuite) TestRangeDict(c *C) {
 }
 
 func (suite *MySuite) Disable_TestParallelLoop(c *C) {
-	q := ParallelLoop(func(a, i AnyVal) (ret AnyVal, err error) {
+	q := ParallelLoop(func(a, i interface{}) (ret interface{}, err error) {
 		ret = a
 		return
-	}, func(a AnyVal) (ret AnyVal, err error) {
+	}, func(a interface{}) (ret interface{}, err error) {
 		ret = a.(int) * 2
 		return
 	}, []int{10, 31, 53})
 
 	type _res struct {
-		v  AnyVal
+		v  interface{}
 		ok bool
 	}
 	res := []_res{
@@ -98,7 +98,7 @@ func (suite *MySuite) Disable_TestParallelLoop(c *C) {
 		{nil, false},
 	}
 	i := 0
-	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(q.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, res[i].v) {
 			panic("not equal")
 		}

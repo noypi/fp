@@ -10,13 +10,13 @@ func (suite *MySuite) TestListCompr(c *C) {
 
 	list := []int{1, 2, 3, 4, 5, 6}
 
-	q := ListCompr(func(a AnyVal) (ret AnyVal) {
+	q := ListCompr(func(a interface{}) (ret interface{}) {
 		return a.(int) * 3
-	}, list, func(a AnyVal) bool {
+	}, list, func(a interface{}) bool {
 		return 0 == (a.(int) % 2)
 	})
 
-	res := []AnyVal{
+	res := []interface{}{
 		6,
 		12,
 		18,
@@ -24,7 +24,7 @@ func (suite *MySuite) TestListCompr(c *C) {
 	}
 
 	i := 0
-	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(q.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, res[i]) {
 			panic("not equal")
 		}
@@ -39,15 +39,15 @@ func (suite *MySuite) TestListCompr2(c *C) {
 	alist := []int{1, 2, 3, 4, 5, 6}
 	blist := []int{2, 3, 4, 5, 6, 7}
 
-	q := ListCompr2(func(a, b AnyVal) (ret AnyVal) {
+	q := ListCompr2(func(a, b interface{}) (ret interface{}) {
 		return a.(int) + b.(int)
 
-	}, alist, blist, func(a, b AnyVal) bool {
+	}, alist, blist, func(a, b interface{}) bool {
 		return 0 == (a.(int) % 2)
 	})
 
 	type _res struct {
-		v  AnyVal
+		v  interface{}
 		ok bool
 	}
 	res := []_res{
@@ -57,7 +57,7 @@ func (suite *MySuite) TestListCompr2(c *C) {
 		{nil, false},
 	}
 	i := 0
-	Flush(q.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(q.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, res[i].v) {
 			panic("not equal")
 		}

@@ -51,7 +51,7 @@ func tickWhile(f FuncTickAny, d time.Duration, predicates ...FuncBool1) (p *Prom
 	}
 
 	var prevtime time.Time
-	return produceWhile(func() (ret AnyVal) {
+	return produceWhile(func() (ret interface{}) {
 		now := <-tickr
 		if nil != f {
 			ret = f(now, prevtime)

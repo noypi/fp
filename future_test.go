@@ -9,12 +9,12 @@ import (
 )
 
 func (suite *MySuite) TestFuture_x01(c *C) {
-	p := Future(func() (ret AnyVal, err error) {
+	p := Future(func() (ret interface{}, err error) {
 		ret = 1
 		return
 	})
 
-	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(p.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, 1) {
 			panic("not equal")
 		}
@@ -25,7 +25,7 @@ func (suite *MySuite) TestFuture_x01(c *C) {
 func (suite *MySuite) TestFuture_x03(c *C) {
 
 	didCall := false
-	p := Future(func() (ret AnyVal, err error) {
+	p := Future(func() (ret interface{}, err error) {
 		fmt.Print("adrian guwapo")
 		didCall = true
 		return
@@ -51,7 +51,7 @@ func (suite *MySuite) TestPromise_close(c *C) {
 	p := makepromise()
 	p.close()
 
-	Flush(p.Then(func(a AnyVal) (AnyVal, error) {
+	Flush(p.Then(func(a interface{}) (interface{}, error) {
 		if !reflect.DeepEqual(a, nil) {
 			panic("not equal")
 		}

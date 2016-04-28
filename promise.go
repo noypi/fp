@@ -23,7 +23,7 @@ func (this *Promise) close() {
 func (this *Promise) Then(fns ...Func1) (p *Promise) {
 	p = makepromise()
 	go func() {
-		var res2 AnyVal
+		var res2 interface{}
 		var err2 error
 		for res := range this.q {
 			if nil != res.err {
@@ -51,7 +51,7 @@ func (this *Promise) send(a *qMsg) {
 	this.q <- a
 }
 
-func Fcall(v AnyVal) *Promise {
+func Fcall(v interface{}) *Promise {
 	p := makepromise()
 	msg := new(qMsg)
 	msg.a = v

@@ -4,8 +4,8 @@ import (
 	"reflect"
 )
 
-func ReduceParams(fn AnyVal, as AnyVal) *Promise {
-	return Future(func() (res AnyVal, err error) {
+func ReduceParams(fn interface{}, as interface{}) *Promise {
+	return Future(func() (res interface{}, err error) {
 		defer func() {
 			err = recover2err(recover(), ErrInvalidParam)
 		}()
@@ -24,8 +24,8 @@ func ReduceParams(fn AnyVal, as AnyVal) *Promise {
 	})
 }
 
-func ReduceFuncs(initparam AnyVal, fns AnyVal) *Promise {
-	return Future(func() (res AnyVal, err error) {
+func ReduceFuncs(initparam interface{}, fns interface{}) *Promise {
+	return Future(func() (res interface{}, err error) {
 		defer func() {
 			err = recover2err(recover(), ErrInvalidParam)
 		}()

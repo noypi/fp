@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p *Promise) {
+func Range(f Func2, listOrMap interface{}, chanlen ...int) (p *Promise) {
 	typ := reflect.TypeOf(listOrMap)
 	var ranger Ranger
 	switch typ.Kind() {
@@ -24,26 +24,26 @@ func Range(f Func2, listOrMap AnyVal, chanlen ...int) (p *Promise) {
 // !!! not yet tested
 // execute af() for each element; and for each valid element run bf() in parallel
 // p receives the result of bf()
-func ParallelLoop(af Func2, bf Func1, aListOrMap AnyVal, chanlen ...int) (p *Promise) {
+func ParallelLoop(af Func2, bf Func1, aListOrMap interface{}, chanlen ...int) (p *Promise) {
 
 	q1 := Range(af, aListOrMap)
 
-	p = LazyInAsync1(func(a AnyVal) (AnyVal, error) {
+	p = LazyInAsync1(func(a interface{}) (interface{}, error) {
 		return bf(a)
 	}, q1, chanlen...)
 
 	return
 
 }
-func RangeList(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
+func RangeList(f Func2, list interface{}, chanlen ...int) (p *Promise) {
 	return rangeList(f, list, false, chanlen...)
 }
 
-func RangeListAsync(f Func2, list AnyVal, chanlen ...int) (p *Promise) {
+func RangeListAsync(f Func2, list interface{}, chanlen ...int) (p *Promise) {
 	return rangeList(f, list, true, chanlen...)
 }
 
-func rangeList(f Func2, list AnyVal, async bool, chanlen ...int) (p *Promise) {
+func rangeList(f Func2, list interface{}, async bool, chanlen ...int) (p *Promise) {
 	v, ok := list.(reflect.Value)
 	if !ok {
 		v = reflect.ValueOf(list)
@@ -81,13 +81,13 @@ func rangeList(f Func2, list AnyVal, async bool, chanlen ...int) (p *Promise) {
 }
 
 // calls Func2 as func(value, key)
-func RangeDict(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
+func RangeDict(f Func2, dict interface{}, chanlen ...int) (p *Promise) {
 	return rangeDict(f, dict, false, chanlen...)
 }
-func RangeDictAsync(f Func2, dict AnyVal, chanlen ...int) (p *Promise) {
+func RangeDictAsync(f Func2, dict interface{}, chanlen ...int) (p *Promise) {
 	return rangeDict(f, dict, true, chanlen...)
 }
-func rangeDict(f Func2, dict AnyVal, async bool, chanlen ...int) (p *Promise) {
+func rangeDict(f Func2, dict interface{}, async bool, chanlen ...int) (p *Promise) {
 	v, ok := dict.(reflect.Value)
 	if !ok {
 		v = reflect.ValueOf(dict)

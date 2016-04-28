@@ -5,7 +5,7 @@ import (
 )
 
 // !!! not tested
-func Zip2(alist, blist AnyVal) (p *Promise) {
+func Zip2(alist, blist interface{}) (p *Promise) {
 
 	p = makepromise()
 
@@ -39,7 +39,7 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 	go func() {
 
 		for {
-			var x, y AnyVal
+			var x, y interface{}
 			var ok bool
 
 			chosen, xyi, ok := reflect.Select([]reflect.SelectCase{
@@ -89,7 +89,7 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 }
 
 //!!! not yet tested
-func ZipWith2(f FuncAny2, alist, blist AnyVal) (p *Promise) {
+func ZipWith2(f FuncAny2, alist, blist interface{}) (p *Promise) {
 	q := Zip2(alist, blist)
 	p = zipwith(f, q)
 	return
