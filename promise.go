@@ -2,6 +2,7 @@ package fp
 
 import (
 	"reflect"
+	"runtime"
 )
 
 func (this Promise) IsEmpty() bool {
@@ -67,7 +68,7 @@ func makepromise(chanlen ...int) (p *Promise) {
 		}
 		p.q = make(qChan, chanlen[0])
 	} else {
-		p.q = make(qChan, 1)
+		p.q = make(qChan, runtime.NumCPU())
 	}
 	p.vq = reflect.ValueOf(p.q)
 	return
