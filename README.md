@@ -31,19 +31,24 @@
 ```go
 	src := make(chan interface{}, 100)
 	go func() {
-		for i := 1; i <= 100; i++ {
+		for i := 0; i < 100; i++ {
 			src <- i
 		}
 		close(src)
 	}()
 
-	var total int32
 	work := func(a interface{}) (out interface{}, err error) {
-		atomic.AddInt32(&total, int32(a.(int)))
+		out = a.(int) + 1
 		return
 	}
 
 	q := DistributeWorkCh(src, work, uint(runtime.NumCPU()))
+
+	var total int32
+	q = q.Then(func(a interface{}) (out interface{}, err error) {
+		atomic.AddInt32(&total, int32(a.(int)))
+		return
+	})
 
 	// wait
 	Flush(q)
