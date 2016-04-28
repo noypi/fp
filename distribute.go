@@ -5,11 +5,17 @@ import (
 )
 
 func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error), nProcessor uint) (q *Promise) {
+	panic("todo")
+	return
+}
+
+func DistributeWorkCh(src chan interface{}, worker func(interface{}) (interface{}, error), nProcessor uint) (q *Promise) {
 	q = makepromise()
 	go func() {
 		var wg sync.WaitGroup
 		var i uint
-		for a := range q.q {
+		for a := range src {
+			wg.Add(1)
 			go func() {
 				var msg = new(qMsg)
 				msg.a, msg.err = worker(a)
@@ -20,9 +26,10 @@ func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error),
 			if 0 >= (nProcessor - i) {
 				wg.Wait()
 				i = 0
-
 			}
 		}
+		wg.Wait()
+		q.close()
 	}()
 	return
 }

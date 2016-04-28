@@ -12,19 +12,37 @@
 - chainable, and async
 
 ```go
-	q := Future(func() (AnyVal, error) {
+	q := Future(func() (interface{}, error) {
 		// do some work
 		return "resolved", errors.New("failed")
 	})
 
-	q = q.Then(func(a AnyVal) (AnyVal, error) {
+	q = q.Then(func(a interface{}) (interface{}, error) {
 		// on resolved
 		return "resolved", errors.New("failed")
-	}, func(a AnyVal) (AnyVal, error) {
+	}, func(a interface{}) (interface{}, error) {
 		// on error
 		return "resolved", errors.New("failed")
 	})
 
+```
+
+##### distribute work (TODO: still in progress)
+```go
+	src := make(chan interface{}, 100)
+	go func() {
+		for i := 0; i < 100; i++ {
+			src <- i
+		}
+		close(src)
+	}()
+
+	work := func(a interface{}) (out interface{}, err error) {
+		out = a.(int) * 10
+		return
+	}
+
+	q := DistributeWorkCh(src, work, uint(runtime.NumCPU()))
 ```
 
 ##### example of implementing a resource using LazyN
@@ -40,10 +58,10 @@
 		r.fput = LazyN(fput)
 		return
 	}
-	func (this Resource) Get(n ...AnyVal) (p *Promise) {
+	func (this Resource) Get(n ...interface{}) (p *Promise) {
 		return r.fget(n...)
 	}
-	func (this Resource) Put(n ...AnyVal) (p *Promise) {
+	func (this Resource) Put(n ...interface{}) (p *Promise) {
 		return r.fput(n...)
 	}
 ```
@@ -53,7 +71,7 @@
 ```go
 	as := []int{26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2, 26, 27, 29, 0, 1, 2}
 	// range will concurrently execute each
-	qLazy := Range(func(a, i AnyVal) (ret AnyVal, err error) {
+	qLazy := Range(func(a, i interface{}) (ret interface{}, err error) {
 		ret = &Tuple2{
 			A: a,
 			B: i,
@@ -61,7 +79,7 @@
 		return
 	}, as)
 
-	q1 := LazyInAsync1(func(x AnyVal) (ret AnyVal, err error) {
+	q1 := LazyInAsync1(func(x interface{}) (ret interface{}, err error) {
 		ret = fb(x.(*Tuple2).A.(int))
 		return
 	}, qLazy)
