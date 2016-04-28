@@ -25,5 +25,5 @@ func (suite *MySuite) TestDistributeWork(c *C) {
 
 	// wait
 	Flush(q)
-	c.Assert(total, Equals, 5050)
+	c.Assert(total, Equals, int32(5050))
 }
