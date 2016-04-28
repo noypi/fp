@@ -12,7 +12,7 @@ func DistributeWork(src *Promise, worker func(AnyVal), nProcessor uint) (q *Prom
 		for a := range q.q {
 			go func() { worker(a); wg.Done() }()
 			i++
-			if 0 == (nProcessor - i) {
+			if 0 >= (nProcessor - i) {
 				wg.Wait()
 				i = 0
 
