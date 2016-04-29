@@ -1,14 +1,12 @@
 package fp
 
 import (
-	"reflect"
 	"time"
 )
 
 type qChan chan *qMsg
 type Promise struct {
 	q      qChan
-	vq     reflect.Value
 	err    error
 	closed bool
 }

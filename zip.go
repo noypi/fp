@@ -38,8 +38,8 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 
 	go func() {
 
-		a.vq = reflect.ValueOf(a.q)
-		b.vq = reflect.ValueOf(b.q)
+		avq := reflect.ValueOf(a.q)
+		bvq := reflect.ValueOf(b.q)
 
 		for {
 			var x, y interface{}
@@ -48,11 +48,11 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 			chosen, xyi, ok := reflect.Select([]reflect.SelectCase{
 				reflect.SelectCase{
 					Dir:  reflect.SelectRecv,
-					Chan: a.vq,
+					Chan: avq,
 				},
 				reflect.SelectCase{
 					Dir:  reflect.SelectRecv,
-					Chan: b.vq,
+					Chan: bvq,
 				},
 			})
 
