@@ -8,9 +8,11 @@ func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error),
 	q = makepromise()
 	go func() {
 		var wg sync.WaitGroup
-		var i uint
+		var wCh = make(chan struct{}, nProcessor)
+		var blank = struct{}{}
 		for a := range src.q {
 			wg.Add(1)
+			wCh <- blank
 			go func(a1 interface{}) {
 				switch v := a1.(type) {
 				case *qMsg:
@@ -25,15 +27,15 @@ func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error),
 
 				}
 				wg.Done()
+				<-wCh
 			}(a)
-			i++
-			if 0 >= (nProcessor - i) {
-				wg.Wait()
-				i = 0
-			}
 		}
+		close(wCh)
 		wg.Wait()
 		q.close()
+		for _ = range wCh {
+
+		}
 	}()
 	return
 }

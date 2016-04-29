@@ -44,7 +44,7 @@ func (suite *MySuite) TestDistributeWorkCh(c *C) {
 		return
 	}
 
-	q := DistributeWorkCh(src, work, uint(runtime.NumCPU()))
+	q := DistributeWorkCh(src, work, 3)
 
 	// wait
 	Flush(q)
