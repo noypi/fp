@@ -38,6 +38,9 @@ func ZipGen2(a, b *Promise) (p *Promise) {
 
 	go func() {
 
+		a.vq = reflect.ValueOf(a.q)
+		b.vq = reflect.ValueOf(b.q)
+
 		for {
 			var x, y interface{}
 			var ok bool

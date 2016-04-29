@@ -2,14 +2,12 @@ package fp
 
 import (
 	"reflect"
-	"sync"
 	"time"
 )
 
 type qChan chan *qMsg
 type Promise struct {
 	q      qChan
-	m      sync.Mutex
 	vq     reflect.Value
 	err    error
 	closed bool

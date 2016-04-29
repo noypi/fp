@@ -1,7 +1,6 @@
 package fp
 
 import (
-	"reflect"
 	"runtime"
 )
 
@@ -14,10 +13,8 @@ func (this *Promise) SetContinueOnError() {
 }
 
 func (this *Promise) close() {
-	this.m.Lock()
 	close(this.q)
 	this.closed = true
-	this.m.Unlock()
 }
 
 func (this *Promise) Then(fns ...Func1) (p *Promise) {
@@ -70,6 +67,5 @@ func makepromise(chanlen ...int) (p *Promise) {
 	} else {
 		p.q = make(qChan, runtime.NumCPU())
 	}
-	p.vq = reflect.ValueOf(p.q)
 	return
 }
