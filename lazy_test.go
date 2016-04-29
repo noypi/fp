@@ -9,7 +9,7 @@ func (suite *MySuite) TestLazy(c *C) {
 	/* TODO: fix this
 	seq := []string{}
 
-	qLazy := Lazy(func() AnyVal {
+	qLazy := Lazy(func() interface{} {
 		seq = append(seq, "lazy")
 		return 10 + 2
 	})
