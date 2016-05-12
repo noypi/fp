@@ -43,9 +43,6 @@ func distributework(srcq qChan, srcqAny chan interface{}, q *Promise, worker fun
 	close(wCh)
 	wg.Wait()
 	q.close()
-	for _ = range wCh {
-
-	}
 }
 
 func DistributeWork(src *Promise, worker func(interface{}) (interface{}, error), nProcessor uint) (q *Promise) {
