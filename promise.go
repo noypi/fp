@@ -45,7 +45,11 @@ func (this *Promise) Then(fns ...Func1) (p *Promise) {
 }
 
 func (this *Promise) send(a *qMsg) {
-	this.q <- a
+	if nil == a.a && nil == a.err {
+		// skip
+	} else {
+		this.q <- a
+	}
 }
 
 func Fcall(v interface{}) *Promise {
