@@ -4,12 +4,12 @@ import (
 	"runtime"
 )
 
-func (this Promise) IsEmpty() bool {
-	return 0 == len(this.q)
+func (this *Promise) Flush() {
+	Flush(this)
 }
 
-func (this *Promise) SetContinueOnError() {
-	panic("soon")
+func (this Promise) IsEmpty() bool {
+	return 0 == len(this.q)
 }
 
 func (this *Promise) close() {
